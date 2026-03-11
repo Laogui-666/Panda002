@@ -6,7 +6,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { 
   Briefcase, Download, Loader2, Building, User, 
-  Calendar, FileText, Clock
+  Calendar, FileText, Clock, File
 } from 'lucide-react';
 
 // 中文在职证明模板
@@ -229,7 +229,7 @@ const EN_TEMPLATE = `<!DOCTYPE html>
         <br>
         <p>This is to certify that <span class="bold">{{EMPLOYEE_NAME_EN}}</span> has been employed by our <span class="bold">{{COMPANY_NATURE_EN}}</span> since <span class="bold">{{HIRE_YEAR}}-{{HIRE_MONTH}}-{{HIRE_DAY}}</span>, currently serving as <span class="bold">{{POSITION}}</span>.</p>
         <p>Our <span class="bold">{{COMPANY_NATURE_EN}}</span> hereby grants {{GENDER}} leave from <span class="bold">{{LEAVE_START_YEAR}}-{{LEAVE_START_MONTH}}-{{LEAVE_START_DAY}}</span> to <span class="bold">{{LEAVE_END_YEAR}}-{{LEAVE_END_MONTH}}-{{LEAVE_END_DAY}}</span> for travel to <span class="bold">{{DESTINATION_EN}}</span>.</p>
-        <p>We hereby guarantee that <span class="bold">{{GENDER_TERM}}</span> will comply with all laws and regulations of your country and return to <span class="bold">{{POSSESSIVE}}</span> home country on time. All travel expenses will be borne by <span class="bold">{{EXPENSE_BEARER_EN}}</span>.<br>
+        <p>We hereby guarantee that <span class="bold">{{EMPLOYEE_NAME_EN}}</span> <span class="bold">{{GENDER_TERM}}</span> will comply with all laws and regulations of your country and return to <span class="bold">{{POSSESSIVE}}</span> home country on time. All travel expenses will be borne by <span class="bold">{{EXPENSE_BEARER_EN}}</span>.<br>
 We hereby agrees and commits that <span class="bold">{{EMPLOYEE_NAME_EN}}</span> will continue to hold <span class="bold">{{POSSESSIVE}}</span> current position upon returning to <span class="bold">{{POSSESSIVE}}</span> home country.</p>
         <table>
             <thead>
@@ -360,6 +360,7 @@ const DESTINATIONS = [
 
 // 申根国家列表
 const SCHENGEN_COUNTRIES = [
+  { value: '', label: '请选择具体国家' },
   { value: '法国', label: '法国使领馆' },
   { value: '意大利', label: '意大利使领馆' },
   { value: '西班牙', label: '西班牙使领馆' },
@@ -390,6 +391,7 @@ const SCHENGEN_COUNTRIES = [
 
 // 收件人选项
 const RECIPIENT_OPTIONS = [
+  { value: '', label: '请选择收件人' },
   { value: '欧洲', label: '欧洲各申根国使领馆' },
   { value: '英国', label: '英国使领馆' },
   { value: '澳大利亚', label: '澳大利亚使领馆' },
@@ -413,10 +415,10 @@ const GENDER_OPTIONS = [
   { value: '女', label: '女', text: '女士' },
 ];
 
-// 费用承担人选项
-const EXPENSE_BEARER_OPTIONS = [
+// 获取费用承担人选项（根据公司性质动态生成
+const getExpenseBearerOptions = (companyNature: string) => [
   { value: '本人', label: '本人' },
-  { value: '公司', label: '公司' },
+  { value: companyNature, label: companyNature },
   { value: '其他', label: '其他' },
 ];
 
@@ -472,7 +474,7 @@ const getDefaultFields = (): FormData => ({
   EXPENSE_BEARER_OTHER: '',
   LEADER_NAME: '',
   LEADER_POSITION: '',
-  RECIPIENT: '欧洲',
+  RECIPIENT: '',
   SCHENGEN_COUNTRY: '',
 });
 
@@ -523,7 +525,11 @@ const fillTemplate = (template: string, data: FormData): string => {
   
   // 获取费用承担人
   let expenseBearer = data.EXPENSE_BEARER;
-  if (data.EXPENSE_BEARER === '其他' && data.EXPENSE_BEARER_OTHER) {
+  if (data.EXPENSE_BEARER === '本人') {
+    expenseBearer = data.EMPLOYEE_NAME + '本人';
+  } else if (data.EXPENSE_BEARER === data.COMPANY_NATURE) {
+    expenseBearer = data.COMPANY_NAME;
+  } else if (data.EXPENSE_BEARER === '其他' && data.EXPENSE_BEARER_OTHER) {
     expenseBearer = data.EXPENSE_BEARER_OTHER;
   }
   
@@ -531,8 +537,8 @@ const fillTemplate = (template: string, data: FormData): string => {
   let expenseBearerEn = '';
   if (data.EXPENSE_BEARER === '本人') {
     expenseBearerEn = genderReflexive; // himself/herself
-  } else if (data.EXPENSE_BEARER === '公司') {
-    expenseBearerEn = data.COMPANY_NAME_EN || data.COMPANY_NAME || 'the company';
+  } else if (data.EXPENSE_BEARER === data.COMPANY_NATURE) {
+    expenseBearerEn = data.COMPANY_NAME_EN || data.COMPANY_NAME || 'the ' + companyNatureEn;
   } else if (data.EXPENSE_BEARER === '其他' && data.EXPENSE_BEARER_OTHER) {
     expenseBearerEn = data.EXPENSE_BEARER_OTHER;
   } else {
@@ -868,6 +874,64 @@ export default function ProofPage() {
     }
   };
 
+  // 生成Word函数
+  const generateWord = async (isEnglish: boolean) => {
+    if (!fields.COMPANY_NAME || !fields.EMPLOYEE_NAME) {
+      alert('请填写公司名称和员工姓名');
+      return;
+    }
+
+    const setProgress = isEnglish ? setEnProgress : setCnProgress;
+    setIsGenerating(true);
+    setProgress(0);
+    
+    progressRef.current = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 90) {
+          if (progressRef.current) clearInterval(progressRef.current);
+          return 90;
+        }
+        return prev + Math.random() * 15;
+      });
+    }, 200);
+    
+    try {
+      let templateData = fields;
+      
+      if (isEnglish) {
+        templateData = await translateFieldsToEnglish(fields);
+      }
+      
+      const template = isEnglish ? EN_TEMPLATE : CN_TEMPLATE;
+      const html = fillTemplate(template, templateData);
+      
+      // 创建Blob并下载
+      const blob = new Blob([html], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      const fileName = isEnglish 
+        ? `Employment_Certificate_${templateData.EMPLOYEE_NAME_EN || templateData.EMPLOYEE_NAME || fields.EMPLOYEE_NAME}.html`
+        : `在职证明_${fields.EMPLOYEE_NAME}.html`;
+      link.download = fileName;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+    } catch (error) {
+      console.error('生成失败:', error);
+      alert('生成失败，请重试');
+    } finally {
+      if (progressRef.current) clearInterval(progressRef.current);
+      setProgress(100);
+      setTimeout(() => {
+        setIsGenerating(false);
+        setProgress(0);
+      }, 500);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-morandi-cream to-morandi-blush">
       <Navbar />
@@ -1053,7 +1117,7 @@ export default function ProofPage() {
                   value={fields.EXPENSE_BEARER}
                   onChange={(v) => handleChange('EXPENSE_BEARER', v)}
                   type="select"
-                  options={EXPENSE_BEARER_OPTIONS}
+                  options={getExpenseBearerOptions(fields.COMPANY_NATURE)}
                 />
                 {fields.EXPENSE_BEARER === '其他' && (
                   <InputField
@@ -1141,6 +1205,72 @@ export default function ProofPage() {
                     <div className="text-lg">记录</div>
                   </div>
                 </button>
+              </div>
+            </div>
+
+            {/* 生成Word按钮 */}
+            <div className="bg-white rounded-2xl shadow-lg p-6 mt-4">
+              <div className="grid grid-cols-3 gap-3">
+                {/* 生成中文Word */}
+                <div className="relative">
+                  <button
+                    onClick={() => generateWord(false)}
+                    disabled={isGenerating}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-4 bg-gradient-to-r from-[#5D8A8E] via-[#4A7A7E] to-[#3D6A6E] text-white font-semibold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all disabled:opacity-50 group"
+                  >
+                    {isGenerating ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center group-hover:bg-white/30 transition-all">
+                        <File className="w-4 h-4" />
+                      </div>
+                    )}
+                    <div className="text-left">
+                      <div className="text-sm opacity-80">生成中文</div>
+                      <div className="text-lg">Word 文档</div>
+                    </div>
+                  </button>
+                  {cnProgress > 0 && (
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-transparent rounded-b-xl overflow-hidden">
+                      <div 
+                        className="h-full bg-white/80 transition-all duration-200" 
+                        style={{ width: `${cnProgress}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
+                
+                {/* 生成英文Word */}
+                <div className="relative">
+                  <button
+                    onClick={() => generateWord(true)}
+                    disabled={isGenerating}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-4 bg-gradient-to-r from-[#7A9B8C] via-[#6A8B7C] to-[#5A7B6C] text-white font-semibold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all disabled:opacity-50 group"
+                  >
+                    {isGenerating ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center group-hover:bg-white/30 transition-all">
+                        <File className="w-4 h-4" />
+                      </div>
+                    )}
+                    <div className="text-left">
+                      <div className="text-sm opacity-80">生成英文</div>
+                      <div className="text-lg">Word 文档</div>
+                    </div>
+                  </button>
+                  {enProgress > 0 && (
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-transparent rounded-b-xl overflow-hidden">
+                      <div 
+                        className="h-full bg-white/80 transition-all duration-200" 
+                        style={{ width: `${enProgress}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
+                
+                {/* 空白占位 */}
+                <div></div>
               </div>
             </div>
           </div>
