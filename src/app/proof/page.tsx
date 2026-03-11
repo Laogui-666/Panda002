@@ -6,7 +6,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { 
   Briefcase, Download, Loader2, Building, User, 
-  Calendar, FileText
+  Calendar, FileText, Clock
 } from 'lucide-react';
 
 // 中文在职证明模板
@@ -39,6 +39,7 @@ const CN_TEMPLATE = `<!DOCTYPE html>
             border-bottom: 1px solid #000;
             padding-bottom: 10px;
             margin-bottom: 25px;
+            font-weight: bold;
         }
         .title {
             text-align: center;
@@ -77,6 +78,9 @@ const CN_TEMPLATE = `<!DOCTYPE html>
         th {
             font-weight: bold;
         }
+        .bold {
+            font-weight: bold;
+        }
         .footer-info {
             margin-top: 50px;
             line-height: 1.3;
@@ -97,9 +101,9 @@ const CN_TEMPLATE = `<!DOCTYPE html>
         <p>日期：{{ISSUING_YEAR}} 年 {{ISSUING_MONTH}} 月 {{ISSUING_DAY}} 日</p>
         <p>收件人：{{RECIPIENT}}</p>
         <br>
-        <p class="indent">兹证明 {{EMPLOYEE_NAME}}{{GENDER}}自 {{HIRE_YEAR}} 年 {{HIRE_MONTH}} 月 {{HIRE_DAY}} 日起至今在我{{COMPANY_NATURE}}任职，现任{{POSITION}}职位。</p>
-        <p class="indent">我{{COMPANY_NATURE}}批准{{EMPLOYEE_NAME}}{{GENDER}}于 {{LEAVE_START_YEAR}} 年 {{LEAVE_START_MONTH}} 月 {{LEAVE_START_DAY}} 日 至 {{LEAVE_END_YEAR}} 年 {{LEAVE_END_MONTH}} 月 {{LEAVE_END_DAY}} 日 期间请假，前往{{DESTINATION}}。</p>
-        <p class="indent">我{{COMPANY_NATURE}}保证{{EMPLOYEE_NAME}}{{GENDER}}将遵守贵国法律法规并按时回国，旅行期间费用由{{EXPENSE_BEARER}}承担。我{{COMPANY_NATURE}}同意并承诺{{EMPLOYEE_NAME}}{{GENDER}}回国后继续留任原职。</p>
+        <p class="indent">兹证明 <span class="bold">{{EMPLOYEE_NAME}}</span>{{GENDER}}自 <span class="bold">{{HIRE_YEAR}} 年 {{HIRE_MONTH}} 月 {{HIRE_DAY}} 日</span>起至今在我{{COMPANY_NATURE}}任职，现任<span class="bold">{{POSITION}}</span>职位。</p>
+        <p class="indent">我{{COMPANY_NATURE}}批准{{EMPLOYEE_NAME}}{{GENDER}}于 <span class="bold">{{LEAVE_START_YEAR}} 年 {{LEAVE_START_MONTH}} 月 {{LEAVE_START_DAY}} 日</span> 至 <span class="bold">{{LEAVE_END_YEAR}} 年 {{LEAVE_END_MONTH}} 月 {{LEAVE_END_DAY}} 日</span> 期间请假，前往<span class="bold">{{DESTINATION}}</span>。</p>
+        <p class="indent">我{{COMPANY_NATURE}}保证{{EMPLOYEE_NAME}}{{GENDER}}将遵守贵国法律法规并按时回国，旅行期间费用由<span class="bold">{{EXPENSE_BEARER}}</span>承担。我{{COMPANY_NATURE}}同意并承诺{{EMPLOYEE_NAME}}{{GENDER}}回国后继续留任原职。</p>
         <table>
             <thead>
                 <tr>
@@ -112,10 +116,10 @@ const CN_TEMPLATE = `<!DOCTYPE html>
             </thead>
             <tbody>
                 <tr>
-                    <td>{{EMPLOYEE_NAME}}</td>
+                    <td class="bold">{{EMPLOYEE_NAME}}</td>
                     <td>{{DATE_OF_BIRTH}}</td>
                     <td>{{PASSPORT_NUMBER}}</td>
-                    <td>{{POSITION}}</td>
+                    <td class="bold">{{POSITION}}</td>
                     <td>RMB {{MONTHLY_SALARY}}</td>
                 </tr>
             </tbody>
@@ -165,6 +169,7 @@ const EN_TEMPLATE = `<!DOCTYPE html>
             border-bottom: 1px solid #000;
             padding-bottom: 10px;
             margin-bottom: 20px;
+            font-weight: bold;
         }
         .title {
             text-align: center;
@@ -199,6 +204,9 @@ const EN_TEMPLATE = `<!DOCTYPE html>
         th {
             font-weight: bold;
         }
+        .bold {
+            font-weight: bold;
+        }
         .footer-info {
             margin-top: 40px;
             line-height: 1.3;
@@ -217,11 +225,12 @@ const EN_TEMPLATE = `<!DOCTYPE html>
     <div class="title">EMPLOYMENT CERTIFICATE</div>
     <div class="content">
         <p>Date: {{ISSUING_YEAR}}-{{ISSUING_MONTH}}-{{ISSUING_DAY}}</p>
-        <p>To: {{RECIPIENT}}</p>
+        <p>To: {{RECIPIENT_EN}}</p>
         <br>
-        <p>This is to certify that {{EMPLOYEE_NAME_EN}} has been employed by our {{COMPANY_NATURE}} since {{HIRE_YEAR}}-{{HIRE_MONTH}}-{{HIRE_DAY}}, currently serving as {{POSITION}}.</p>
-        <p>Our {{COMPANY_NATURE}} hereby grants {{GENDER}} leave from {{LEAVE_START_YEAR}}-{{LEAVE_START_MONTH}}-{{LEAVE_START_DAY}} to {{LEAVE_END_YEAR}}-{{LEAVE_END_MONTH}}-{{LEAVE_END_DAY}} for travel to {{DESTINATION}}.</p>
-        <p>We hereby guarantee that {{GENDER}} will comply with all laws and regulations of your country and return to China on time. All travel expenses will be borne by {{EXPENSE_BEARER}}. We confirm that {{GENDER}}'s position will be reserved upon {{GENDER}}'s return to China.</p>
+        <p>This is to certify that <span class="bold">{{EMPLOYEE_NAME_EN}}</span> has been employed by our <span class="bold">{{COMPANY_NATURE_EN}}</span> since <span class="bold">{{HIRE_YEAR}}-{{HIRE_MONTH}}-{{HIRE_DAY}}</span>, currently serving as <span class="bold">{{POSITION}}</span>.</p>
+        <p>Our <span class="bold">{{COMPANY_NATURE_EN}}</span> hereby grants {{GENDER}} leave from <span class="bold">{{LEAVE_START_YEAR}}-{{LEAVE_START_MONTH}}-{{LEAVE_START_DAY}}</span> to <span class="bold">{{LEAVE_END_YEAR}}-{{LEAVE_END_MONTH}}-{{LEAVE_END_DAY}}</span> for travel to <span class="bold">{{DESTINATION_EN}}</span>.</p>
+        <p>We hereby guarantee that <span class="bold">{{GENDER_TERM}}</span> will comply with all laws and regulations of your country and return to <span class="bold">{{POSSESSIVE}}</span> home country on time. All travel expenses will be borne by <span class="bold">{{EXPENSE_BEARER_EN}}</span>.<br>
+We hereby agrees and commits that <span class="bold">{{EMPLOYEE_NAME_EN}}</span> will continue to hold <span class="bold">{{POSSESSIVE}}</span> current position upon returning to <span class="bold">{{POSSESSIVE}}</span> home country.</p>
         <table>
             <thead>
                 <tr>
@@ -234,10 +243,10 @@ const EN_TEMPLATE = `<!DOCTYPE html>
             </thead>
             <tbody>
                 <tr>
-                    <td>{{EMPLOYEE_NAME_EN}}</td>
+                    <td class="bold">{{EMPLOYEE_NAME_EN}}</td>
                     <td>{{DATE_OF_BIRTH}}</td>
                     <td>{{PASSPORT_NUMBER}}</td>
-                    <td>{{POSITION}}</td>
+                    <td class="bold">{{POSITION}}</td>
                     <td>RMB {{MONTHLY_SALARY}}</td>
                 </tr>
             </tbody>
@@ -251,7 +260,7 @@ const EN_TEMPLATE = `<!DOCTYPE html>
             <br><br>
             <p>{{COMPANY_NAME_EN}}</p>
             <p>Tel: {{COMPANY_PHONE}}</p>
-            <p>Address: {{COMPANY_ADDRESS}}</p>
+            <p>Address: {{COMPANY_ADDRESS_EN}}</p>
         </div>
     </div>
 </div>
@@ -259,6 +268,83 @@ const EN_TEMPLATE = `<!DOCTYPE html>
 </html>`;
 
 // 目的地选项
+
+// 目的地英文映射
+const DESTINATION_EN_MAP: Record<string, string> = {
+  '欧洲': 'Europe',
+  '英国': 'United Kingdom',
+  '澳大利亚': 'Australia',
+  '加拿大': 'Canada',
+  '新西兰': 'New Zealand',
+  '美国': 'United States',
+  '日本': 'Japan',
+  '韩国': 'South Korea',
+  '新加坡': 'Singapore',
+  '其他': 'Other',
+};
+
+// 收件人英文映射
+const RECIPIENT_EN_MAP: Record<string, string> = {
+  '欧洲': 'Schengen Area Embassies and Consulates',
+  '英国': 'British Embassy and Consulate',
+  '澳大利亚': 'Australian Embassy and Consulate',
+  '加拿大': 'Canadian Embassy and Consulate',
+  '新西兰': 'New Zealand Embassy and Consulate',
+  '美国': 'U.S. Embassy and Consulate',
+  '日本': 'Japanese Embassy and Consulate',
+  '韩国': 'Korean Embassy and Consulate',
+  '新加坡': 'Singapore Embassy and Consulate',
+};
+
+// 申根国家英文映射
+const SCHENGEN_EN_MAP: Record<string, string> = {
+  '法国': 'French Embassy and Consulate Offices',
+  '意大利': 'Italian Embassy and Consulate Offices',
+  '西班牙': 'Spanish Embassy and Consulate Offices',
+  '德国': 'German Embassy and Consulate Offices',
+  '荷兰': 'Dutch Embassy and Consulate Offices',
+  '比利时': 'Belgian Embassy and Consulate Offices',
+  '奥地利': 'Austrian Embassy and Consulate Offices',
+  '瑞士': 'Swiss Embassy and Consulate Offices',
+  '葡萄牙': 'Portuguese Embassy and Consulate Offices',
+  '希腊': 'Greek Embassy and Consulate Offices',
+  '捷克': 'Czech Embassy and Consulate Offices',
+  '波兰': 'Polish Embassy and Consulate Offices',
+  '匈牙利': 'Hungarian Embassy and Consulate Offices',
+  '瑞典': 'Swedish Embassy and Consulate Offices',
+  '挪威': 'Norwegian Embassy and Consulate Offices',
+  '丹麦': 'Danish Embassy and Consulate Offices',
+  '芬兰': 'Finnish Embassy and Consulate Offices',
+  '斯洛伐克': 'Slovak Embassy and Consulate Offices',
+  '斯洛文尼亚': 'Slovenian Embassy and Consulate Offices',
+  '立陶宛': 'Lithuanian Embassy and Consulate Offices',
+  '拉脱维亚': 'Latvian Embassy and Consulate Offices',
+  '爱沙尼亚': 'Estonian Embassy and Consulate Offices',
+  '卢森堡': 'Luxembourg Embassy and Consulate Offices',
+  '马耳他': 'Maltese Embassy and Consulate Offices',
+  '冰岛': 'Icelandic Embassy and Consulate Offices',
+  '列支敦士登': 'Liechtenstein Embassy and Consulate Offices',
+};
+
+// 公司性质英文映射
+const COMPANY_NATURE_EN_MAP: Record<string, string> = {
+  '公司': 'company',
+  '单位': 'organization',
+};
+
+// 性别英文映射
+const GENDER_EN_MAP: Record<string, { term: string; possessive: string; reflexive: string }> = {
+  '男': { term: 'he', possessive: 'his', reflexive: 'himself' },
+  '女': { term: 'she', possessive: 'her', reflexive: 'herself' },
+};
+
+// 获取北京时间今天的日期字符串
+const getBeijingToday = (): string => {
+  const now = new Date();
+  const beijingTime = new Date(now.getTime() + (8 * 60 * 60 * 1000) - now.getTimezoneOffset() * 60 * 1000);
+  return beijingTime.toISOString().split('T')[0];
+};
+
 const DESTINATIONS = [
   { value: '欧洲', label: '欧洲', labelEn: 'Europe' },
   { value: '英国', label: '英国', labelEn: 'United Kingdom' },
@@ -338,6 +424,7 @@ interface FormData {
   COMPANY_NAME: string;
   COMPANY_NAME_EN: string;
   COMPANY_ADDRESS: string;
+  COMPANY_ADDRESS_EN: string;
   COMPANY_PHONE: string;
   COMPANY_NATURE: string;
   EMPLOYEE_NAME: string;
@@ -365,6 +452,7 @@ const getDefaultFields = (): FormData => ({
   COMPANY_NAME: '',
   COMPANY_NAME_EN: '',
   COMPANY_ADDRESS: '',
+  COMPANY_ADDRESS_EN: '',
   COMPANY_PHONE: '',
   COMPANY_NATURE: '公司',
   EMPLOYEE_NAME: '',
@@ -396,7 +484,13 @@ const fillTemplate = (template: string, data: FormData): string => {
   const genderOption = GENDER_OPTIONS.find(g => g.value === data.GENDER);
   const genderText = genderOption ? genderOption.text : '';
   
-  // 获取收件人显示
+  // 获取英文性别信息
+  const genderEnMap = GENDER_EN_MAP[data.GENDER] || { term: '', possessive: '', reflexive: '' };
+  const genderTerm = genderEnMap.term;
+  const genderPossessive = genderEnMap.possessive;
+  const genderReflexive = genderEnMap.reflexive;
+  
+  // 获取收件人显示（中文）
   let recipient = data.RECIPIENT;
   if (data.RECIPIENT === '欧洲' && data.SCHENGEN_COUNTRY) {
     const country = SCHENGEN_COUNTRIES.find(c => c.value === data.SCHENGEN_COUNTRY);
@@ -406,16 +500,43 @@ const fillTemplate = (template: string, data: FormData): string => {
     recipient = option ? option.label : `${data.RECIPIENT}使领馆`;
   }
   
-  // 获取目的地显示
+  // 获取收件人英文
+  let recipientEn = RECIPIENT_EN_MAP[data.RECIPIENT] || '';
+  if (data.RECIPIENT === '欧洲' && data.SCHENGEN_COUNTRY) {
+    recipientEn = SCHENGEN_EN_MAP[data.SCHENGEN_COUNTRY] || '';
+  }
+  
+  // 获取目的地显示（中文）
   let destination = data.DESTINATION;
   if (data.DESTINATION === '其他' && data.DESTINATION_OTHER) {
     destination = data.DESTINATION_OTHER;
   }
   
+  // 获取目的地英文
+  let destinationEn = DESTINATION_EN_MAP[data.DESTINATION] || '';
+  if (data.DESTINATION === '其他' && data.DESTINATION_OTHER) {
+    destinationEn = data.DESTINATION_OTHER; // 其他目的地使用原文
+  }
+  
+  // 获取公司性质英文
+  const companyNatureEn = COMPANY_NATURE_EN_MAP[data.COMPANY_NATURE] || data.COMPANY_NATURE;
+  
   // 获取费用承担人
   let expenseBearer = data.EXPENSE_BEARER;
   if (data.EXPENSE_BEARER === '其他' && data.EXPENSE_BEARER_OTHER) {
     expenseBearer = data.EXPENSE_BEARER_OTHER;
+  }
+  
+  // 获取费用承担人英文（用于英文模板）
+  let expenseBearerEn = '';
+  if (data.EXPENSE_BEARER === '本人') {
+    expenseBearerEn = genderReflexive; // himself/herself
+  } else if (data.EXPENSE_BEARER === '公司') {
+    expenseBearerEn = data.COMPANY_NAME_EN || data.COMPANY_NAME || 'the company';
+  } else if (data.EXPENSE_BEARER === '其他' && data.EXPENSE_BEARER_OTHER) {
+    expenseBearerEn = data.EXPENSE_BEARER_OTHER;
+  } else {
+    expenseBearerEn = data.EXPENSE_BEARER;
   }
   
   // 解析日期
@@ -439,8 +560,10 @@ const fillTemplate = (template: string, data: FormData): string => {
     '{{COMPANY_NAME}}': data.COMPANY_NAME || '',
     '{{COMPANY_NAME_EN}}': data.COMPANY_NAME_EN || data.COMPANY_NAME || '',
     '{{COMPANY_ADDRESS}}': data.COMPANY_ADDRESS || '',
+    '{{COMPANY_ADDRESS_EN}}': data.COMPANY_ADDRESS_EN || data.COMPANY_ADDRESS || '',
     '{{COMPANY_PHONE}}': data.COMPANY_PHONE || '',
     '{{COMPANY_NATURE}}': data.COMPANY_NATURE || '',
+    '{{COMPANY_NATURE_EN}}': companyNatureEn || '',
     '{{EMPLOYEE_NAME}}': data.EMPLOYEE_NAME || '',
     '{{EMPLOYEE_NAME_EN}}': data.EMPLOYEE_NAME_EN || data.EMPLOYEE_NAME || '',
     '{{PASSPORT_NUMBER}}': data.PASSPORT_NUMBER || '',
@@ -448,9 +571,14 @@ const fillTemplate = (template: string, data: FormData): string => {
     '{{POSITION}}': data.POSITION || '',
     '{{MONTHLY_SALARY}}': data.MONTHLY_SALARY || '',
     '{{GENDER}}': genderText || '',
+    '{{GENDER_TERM}}': genderTerm || '',
+    '{{POSSESSIVE}}': genderPossessive || '',
     '{{RECIPIENT}}': recipient || '',
+    '{{RECIPIENT_EN}}': recipientEn || '',
     '{{DESTINATION}}': destination || '',
+    '{{DESTINATION_EN}}': destinationEn || '',
     '{{EXPENSE_BEARER}}': expenseBearer || '',
+    '{{EXPENSE_BEARER_EN}}': expenseBearerEn || '',
     '{{LEADER_NAME}}': data.LEADER_NAME || '',
     '{{LEADER_POSITION}}': data.LEADER_POSITION || '',
     '{{ISSUING_YEAR}}': issuingDate.year,
@@ -514,9 +642,11 @@ interface InputFieldProps {
   required?: boolean;
   type?: 'text' | 'date' | 'select';
   options?: { value: string; label: string }[];
+  max?: string;  // 最大日期（不能晚于）
+  min?: string;  // 最小日期（不能早于）
 }
 
-const InputField: React.FC<InputFieldProps> = ({ label, value, onChange, placeholder, required, type = 'text', options }) => {
+const InputField: React.FC<InputFieldProps> = ({ label, value, onChange, placeholder, required, type = 'text', options, max, min }) => {
   return (
     <div className="transition-all duration-300">
       <label className="block text-[11px] font-medium text-[#8C9296] uppercase tracking-wider mb-1.5">
@@ -537,6 +667,8 @@ const InputField: React.FC<InputFieldProps> = ({ label, value, onChange, placeho
           type="date"
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          max={max}
+          min={min}
           className="w-full px-3 py-2.5 text-sm bg-[#FAFAFA] border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#6F8386]/20 focus:border-[#6F8386] focus:bg-white transition-all duration-200 outline-none hover:border-[#6F8386]/50 hover:shadow-md"
         />
       ) : (
@@ -555,6 +687,9 @@ const InputField: React.FC<InputFieldProps> = ({ label, value, onChange, placeho
 export default function ProofPage() {
   const [fields, setFields] = useState<FormData>(getDefaultFields());
   const [isGenerating, setIsGenerating] = useState(false);
+  const [cnProgress, setCnProgress] = useState(0);
+  const [enProgress, setEnProgress] = useState(0);
+  const progressRef = useRef<NodeJS.Timeout | null>(null);
   const previewRef = useRef<HTMLIFrameElement>(null);
 
   const handleChange = (key: keyof FormData, value: string) => {
@@ -602,12 +737,14 @@ export default function ProofPage() {
     // 并行翻译其他字段
     const [
       companyNameEn,
+      companyAddressEn,
       employeeNameEn,
       positionEn,
       leaderNameEn,
       leaderPositionEn
     ] = await Promise.all([
       translateText(data.COMPANY_NAME),
+      translateText(data.COMPANY_ADDRESS),
       translateText(data.EMPLOYEE_NAME),
       translateText(data.POSITION),
       translateText(data.LEADER_NAME),
@@ -615,6 +752,7 @@ export default function ProofPage() {
     ]);
     
     translatedData.COMPANY_NAME_EN = companyNameEn || data.COMPANY_NAME_EN;
+    translatedData.COMPANY_ADDRESS_EN = companyAddressEn || data.COMPANY_ADDRESS_EN;
     translatedData.EMPLOYEE_NAME_EN = employeeNameEn || data.EMPLOYEE_NAME_EN;
     translatedData.POSITION = positionEn || data.POSITION;
     translatedData.LEADER_NAME = leaderNameEn || data.LEADER_NAME;
@@ -633,7 +771,21 @@ export default function ProofPage() {
       return;
     }
 
+    // 设置进度条
+    const setProgress = isEnglish ? setEnProgress : setCnProgress;
     setIsGenerating(true);
+    setProgress(0);
+    
+    // 模拟进度条
+    progressRef.current = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 90) {
+          if (progressRef.current) clearInterval(progressRef.current);
+          return 90;
+        }
+        return prev + Math.random() * 15;
+      });
+    }, 200);
     
     try {
       let templateData = fields;
@@ -707,7 +859,12 @@ export default function ProofPage() {
       console.error('生成失败:', error);
       alert('生成失败，请重试');
     } finally {
-      setIsGenerating(false);
+      if (progressRef.current) clearInterval(progressRef.current);
+      setProgress(100);
+      setTimeout(() => {
+        setIsGenerating(false);
+        setProgress(0);
+      }, 500);
     }
   };
 
@@ -756,6 +913,7 @@ export default function ProofPage() {
                   value={fields.ISSUING_DATE}
                   onChange={(v) => handleChange('ISSUING_DATE', v)}
                   type="date"
+                  max={getBeijingToday()}
                 />
               </div>
             </SimpleCard>
@@ -826,6 +984,7 @@ export default function ProofPage() {
                   value={fields.DATE_OF_BIRTH}
                   onChange={(v) => handleChange('DATE_OF_BIRTH', v)}
                   type="date"
+                  max={getBeijingToday()}
                 />
                 <InputField
                   label="护照号码"
@@ -838,6 +997,7 @@ export default function ProofPage() {
                   value={fields.HIRE_DATE}
                   onChange={(v) => handleChange('HIRE_DATE', v)}
                   type="date"
+                  max={getBeijingToday()}
                 />
                 <InputField
                   label="职位"
@@ -864,12 +1024,14 @@ export default function ProofPage() {
                   value={fields.LEAVE_START_DATE}
                   onChange={(v) => handleChange('LEAVE_START_DATE', v)}
                   type="date"
+                  min={getBeijingToday()}
                 />
                 <InputField
                   label="请假结束日期"
                   value={fields.LEAVE_END_DATE}
                   onChange={(v) => handleChange('LEAVE_END_DATE', v)}
                   type="date"
+                  min={fields.LEAVE_START_DATE || getBeijingToday()}
                 />
                 <InputField
                   label="目的地"
@@ -906,39 +1068,77 @@ export default function ProofPage() {
 
             {/* 生成按钮 */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
-              <div className="flex gap-4">
-                <button
-                  onClick={() => generatePDF(false)}
-                  disabled={isGenerating}
-                  className="flex-1 flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-[#5D8A8E] via-[#4A7A7E] to-[#3D6A6E] text-white font-semibold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all disabled:opacity-50 group"
-                >
-                  {isGenerating ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center group-hover:bg-white/30 transition-all">
-                      <FileText className="w-4 h-4" />
+              <div className="grid grid-cols-3 gap-3">
+                {/* 生成中文PDF */}
+                <div className="relative">
+                  <button
+                    onClick={() => generatePDF(false)}
+                    disabled={isGenerating}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-4 bg-gradient-to-r from-[#5D8A8E] via-[#4A7A7E] to-[#3D6A6E] text-white font-semibold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all disabled:opacity-50 group"
+                  >
+                    {isGenerating ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center group-hover:bg-white/30 transition-all">
+                        <FileText className="w-4 h-4" />
+                      </div>
+                    )}
+                    <div className="text-left">
+                      <div className="text-sm opacity-80">生成中文</div>
+                      <div className="text-lg">PDF 文档</div>
+                    </div>
+                  </button>
+                  {/* 进度条 */}
+                  {cnProgress > 0 && (
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-transparent rounded-b-xl overflow-hidden">
+                      <div 
+                        className="h-full bg-white/80 transition-all duration-200" 
+                        style={{ width: `${cnProgress}%` }}
+                      />
                     </div>
                   )}
-                  <div className="text-left">
-                    <div className="text-sm opacity-80">生成中文</div>
-                    <div className="text-lg">PDF 文档</div>
+                </div>
+                
+                {/* 生成英文PDF */}
+                <div className="relative">
+                  <button
+                    onClick={() => generatePDF(true)}
+                    disabled={isGenerating}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-4 bg-gradient-to-r from-[#7A9B8C] via-[#6A8B7C] to-[#5A7B6C] text-white font-semibold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all disabled:opacity-50 group"
+                  >
+                    {isGenerating ? (
+                      <Loader2 className="w-5 h-5 animate-spin" />
+                    ) : (
+                      <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center group-hover:bg-white/30 transition-all">
+                        <FileText className="w-4 h-4" />
+                      </div>
+                    )}
+                    <div className="text-left">
+                      <div className="text-sm opacity-80">生成英文</div>
+                      <div className="text-lg">PDF 文档</div>
+                    </div>
+                  </button>
+                  {/* 进度条 */}
+                  {enProgress > 0 && (
+                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-transparent rounded-b-xl overflow-hidden">
+                      <div 
+                        className="h-full bg-white/80 transition-all duration-200" 
+                        style={{ width: `${enProgress}%` }}
+                      />
+                    </div>
+                  )}
+                </div>
+                
+                {/* 历史记录按钮 */}
+                <button
+                  className="flex items-center justify-center gap-2 px-4 py-4 bg-gradient-to-r from-[#9B8A7A] via-[#8B7A6A] to-[#7B6A5A] text-white font-semibold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all group"
+                >
+                  <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center group-hover:bg-white/30 transition-all">
+                    <Clock className="w-4 h-4" />
                   </div>
-                </button>
-                <button
-                  onClick={() => generatePDF(true)}
-                  disabled={isGenerating}
-                  className="flex-1 flex items-center justify-center gap-3 px-6 py-4 bg-gradient-to-r from-[#7A9B8C] via-[#6A8B7C] to-[#5A7B6C] text-white font-semibold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all disabled:opacity-50 group"
-                >
-                  {isGenerating ? (
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                  ) : (
-                    <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center group-hover:bg-white/30 transition-all">
-                      <FileText className="w-4 h-4" />
-                    </div>
-                  )}
                   <div className="text-left">
-                    <div className="text-sm opacity-80">生成英文</div>
-                    <div className="text-lg">PDF 文档</div>
+                    <div className="text-sm opacity-80">历史</div>
+                    <div className="text-lg">记录</div>
                   </div>
                 </button>
               </div>
