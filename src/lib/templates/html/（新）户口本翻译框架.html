@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Household Register Translation Template - 3/4 Page Layout</title>
+    <!-- 
+    ========================================================================
+    【核心执行指令 - System Prompt】
+    若所需翻译文档为户口本。请提取文档中的所有中文信息并翻译为专业的英文，然后将所有的 {{大写变量名}} 替换为正确的翻译内容。如果有留白字段，请直接删除变量名保留空白标签。直接输出完整的HTML代码。
+
+    【内置生成与排版规则指南】（AI套用时请严格遵守）
+    1. 翻译与格式规范：
+       - 地址翻译必须从小到大排列（Room, Building, Street, District, City...）。
+       - 日期统一使用 "Month DD, YYYY" 格式，例如：June 1, 2021。
+       - 签名保留 <span class="signature"> 标签以维持手写体效果。
+    2. 特殊排版说明（3/4版面定制）：
+       - 本模版已优化行高(1.25)、字号(13px)和单元格内距(4px)，以确保整体内容严格控制在A4纸的上3/4区域，底部留白。
+       - 常住人口登记卡采用20列等宽栅格系统，切勿修改 <colgroup> 和 colspan 的数值。
+    ========================================================================
+    -->
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            font-size: 13px; /* 字体整体缩小1px以适应3/4排版 */
+            color: #000;
+            background-color: #fff;
+            margin: 0;
+            padding: 20px 40px; /* 减小上下默认边距 */
+            line-height: 1.25; /* 行高压缩至1.25 */
+        }
+        .page {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+            position: relative;
+            /* 通过设定最大高度期望值，进一步约束整体视觉处于A4的3/4 */
+            max-height: 210mm; 
+        }
+        .page-break {
+            page-break-after: always;
+            margin-bottom: 20px; /* 减小分页符前后的多余间距 */
+            border-bottom: 2px dashed #ccc;
+            padding-bottom: 20px;
+        }
+        h2 {
+            text-align: center;
+            letter-spacing: 0.5em;
+            font-size: 20px; /* 标题字号缩小 */
+            margin-bottom: 15px; /* 段后距压缩 */
+            margin-top: 0;
+        }
+        h3 {
+            text-align: center;
+            font-size: 17px;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            letter-spacing: 2px;
+        }
+        ol {
+            padding-left: 20px;
+            text-align: justify;
+            margin-bottom: 20px; /* 列表底部间距压缩一半 */
+            font-size: 13px; /* 列表字号缩小 */
+        }
+        li {
+            margin-bottom: 6px; /* 列表项行距压缩 */
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-bottom: 15px; /* 表格间距压缩 */
+        }
+        th, td {
+            border: 1px solid #000;
+            padding: 4px 3px; /* 单元格上下内边距大幅压缩 */
+            text-align: center;
+            vertical-align: middle;
+            word-wrap: break-word;
+        }
+        th {
+            font-weight: normal;
+        }
+        .text-left {
+            text-align: left;
+        }
+        .seal-red {
+            color: #d32f2f;
+            text-align: center;
+            font-weight: bold;
+        }
+        /* 公章整体按比例缩小约20%以节省纵向高度 */
+        .seal-circle {
+            display: inline-block;
+            border: 3px solid #d32f2f;
+            border-radius: 50%;
+            padding: 12px 5px; 
+            width: 130px; 
+            height: 130px; 
+            box-sizing: border-box;
+            font-size: 11px;
+            line-height: 1.2;
+        }
+        .seal-right {
+            width: 150px !important;
+            height: 150px !important;
+            padding: 15px 5px !important;
+        }
+        .signature {
+            font-family: 'Brush Script MT', 'Comic Sans MS', cursive;
+            font-size: 16px;
+        }
+        .card-table th { background-color: transparent; }
+    </style>
+</head>
+<body>
+
+    <!-- ==================== 首页：户口本首页信息 ==================== -->
+    <div class="page page-break">
+        <h2>IMPORTANT NOTICES</h2>
+        <ol>
+            <li>The Resident Household Register has the legal effect of proving the status of citizens and the mutual relationships among family members. It is the primary basis for the household registration organ to conduct census and verification. When the staff of the household registration organ conducts census and verification, the head of the household or family members should voluntarily present the Resident Household Register for inspection.</li>
+            <li>The head of the household should keep the Resident Household Register properly. Unauthorized alteration, transfer, and lending are strictly prohibited. If lost, it must be reported to the household registration organ immediately.</li>
+            <li>The registration right of the Resident Household Register belongs to the household registration organ. No other unit or individual is allowed to make any records in the register.</li>
+            <li>If there is an increase or decrease of personnel in the household or changes in registered items, the Resident Household Register should be taken to the household registration organ to declare and register the changes.</li>
+            <li>If the entire household moves out of the jurisdiction of the household registration, the Resident Household Register should be surrendered to the household registration organ for cancellation.</li>
+        </ol>
+
+        <table>
+            <colgroup>
+                <col style="width: 15%;">
+                <col style="width: 35%;">
+                <col style="width: 15%;">
+                <col style="width: 35%;">
+            </colgroup>
+            <tr>
+                <th>Household Type</th>
+                <td>{{HOUSEHOLD_TYPE}}</td>
+                <th>Name of Head of Household</th>
+                <td>{{HEAD_OF_HOUSEHOLD_NAME}}</td>
+            </tr>
+            <tr>
+                <th>Household No.</th>
+                <td>{{HOUSEHOLD_NUMBER}}</td>
+                <th>Address</th>
+                <td class="text-left">{{HOUSEHOLD_ADDRESS}}</td>
+            </tr>
+        </table>
+
+        <table style="border: none; margin-top: 15px;">
+            <tr>
+                <td style="border: none; width: 50%; padding: 5px;" class="seal-red">
+                    <div class="seal-circle">
+                        <br>{{PROVINCE_SEAL_LINE_1}}<br>Household Register Special Seal<br>
+                        <span style="font-size: 14px;">★</span><br>
+                        {{PROVINCE_SEAL_DEPARTMENT}}
+                    </div>
+                </td>
+                <td style="border: none; width: 50%; padding: 5px;" class="seal-red">
+                    <div class="seal-circle seal-right">
+                        {{MUNICIPAL_SEAL_LINE_1}}<br>
+                        Household Registration Organ<br>Household Register Special Seal<br>
+                        <span style="font-size: 14px;">★</span><br>
+                        {{MUNICIPAL_SEAL_CODE}}<br>
+                        {{MUNICIPAL_SEAL_BRANCH}}
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td style="border: none; text-align: left; vertical-align: bottom; padding-top: 15px;">
+                    Signature of Handler: <span class="signature">{{PAGE_1_HANDLER_SIGNATURE}}</span>
+                </td>
+                <td style="border: none; text-align: right; vertical-align: bottom; padding-top: 15px;">
+                    Issued on: {{ISSUE_DATE}}<br>
+                    {{ISSUING_AUTHORITY}}
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- ==================== 第二页：常住人口登记卡 ==================== -->
+    <div class="page">
+        <h3>Registration of Address Changes</h3>
+        <table>
+            <colgroup>
+                <col style="width: 50%;">
+                <col style="width: 25%;">
+                <col style="width: 25%;">
+            </colgroup>
+            <tr>
+                <th>Address after change</th>
+                <th>Date of change</th>
+                <th>Signature of Handler</th>
+            </tr>
+            <!-- 空白单元格高度压缩为20px -->
+            <tr><td style="height: 20px;">{{ADDRESS_CHANGE_1}}</td><td>{{DATE_CHANGE_1}}</td><td>{{SIGNATURE_CHANGE_1}}</td></tr>
+            <tr><td style="height: 20px;">{{ADDRESS_CHANGE_2}}</td><td>{{DATE_CHANGE_2}}</td><td>{{SIGNATURE_CHANGE_2}}</td></tr>
+            <tr><td style="height: 20px;">{{ADDRESS_CHANGE_3}}</td><td>{{DATE_CHANGE_3}}</td><td>{{SIGNATURE_CHANGE_3}}</td></tr>
+            <tr><td style="height: 20px;">{{ADDRESS_CHANGE_4}}</td><td>{{DATE_CHANGE_4}}</td><td>{{SIGNATURE_CHANGE_4}}</td></tr>
+        </table>
+
+        <div style="margin-top: 20px; margin-bottom: 5px; font-size: 13px;">
+            Household No.: {{HOUSEHOLD_NUMBER}}
+        </div>
+        <h3 style="margin-top: 0;">Resident Population Registration Card</h3>
+        
+        <table class="card-table">
+            <colgroup>
+                <col style="width: 5%;"><col style="width: 5%;"><col style="width: 5%;"><col style="width: 5%;"><col style="width: 5%;">
+                <col style="width: 5%;"><col style="width: 5%;"><col style="width: 5%;"><col style="width: 5%;"><col style="width: 5%;">
+                <col style="width: 5%;"><col style="width: 5%;"><col style="width: 5%;"><col style="width: 5%;"><col style="width: 5%;">
+                <col style="width: 5%;"><col style="width: 5%;"><col style="width: 5%;"><col style="width: 5%;"><col style="width: 5%;">
+            </colgroup>
+            <tr>
+                <th colspan="3">Name</th>
+                <td colspan="5">{{CARD_NAME}}</td>
+                <th colspan="7">Head of Household or Relationship to Head</th>
+                <td colspan="5">{{CARD_RELATIONSHIP}}</td>
+            </tr>
+            <tr>
+                <th colspan="3">Former Name</th>
+                <td colspan="5">{{CARD_FORMER_NAME}}</td>
+                <th colspan="7">Sex</th>
+                <td colspan="5">{{CARD_SEX}}</td>
+            </tr>
+            <tr>
+                <th colspan="3">Place of Birth</th>
+                <td colspan="5">{{CARD_BIRTHPLACE}}</td>
+                <th colspan="7">Ethnicity</th>
+                <td colspan="5">{{CARD_ETHNICITY}}</td>
+            </tr>
+            <tr>
+                <th colspan="3">Native Place</th>
+                <td colspan="5">{{CARD_NATIVE_PLACE}}</td>
+                <th colspan="7">Date of Birth</th>
+                <td colspan="5">{{CARD_DOB}}</td>
+            </tr>
+            <tr>
+                <th colspan="3">Other Addresses in this City(County)</th>
+                <td colspan="5">{{CARD_OTHER_ADDRESS}}</td>
+                <th colspan="7">Religious Belief</th>
+                <td colspan="5">{{CARD_RELIGION}}</td>
+            </tr>
+            <tr>
+                <th colspan="4">Citizen ID Card No.</th>
+                <td colspan="8">{{CARD_ID_NUMBER}}</td>
+                <th colspan="2">Height</th>
+                <td colspan="2">{{CARD_HEIGHT}}</td>
+                <th colspan="2">Blood Type</th>
+                <td colspan="2">{{CARD_BLOOD_TYPE}}</td>
+            </tr>
+            <tr>
+                <th colspan="3">Education Level</th>
+                <td colspan="4">{{CARD_EDUCATION}}</td>
+                <th colspan="3">Marital Status</th>
+                <td colspan="4">{{CARD_MARITAL_STATUS}}</td>
+                <th colspan="3">Military Service Status</th>
+                <td colspan="3">{{CARD_MILITARY}}</td>
+            </tr>
+            <tr>
+                <th colspan="3">Place of Service</th>
+                <td colspan="11">{{CARD_WORKPLACE}}</td>
+                <th colspan="3">Occupation</th>
+                <td colspan="3">{{CARD_OCCUPATION}}</td>
+            </tr>
+            <tr>
+                <th colspan="6">When and from where migrated<br>to this city(county)</th>
+                <td colspan="14" class="text-left">{{CARD_MIGRATE_CITY_INFO}}</td>
+            </tr>
+            <tr>
+                <th colspan="6">When and from where migrated<br>to this address</th>
+                <td colspan="14" class="text-left">{{CARD_MIGRATE_ADDRESS_INFO}}</td>
+            </tr>
+        </table>
+
+        <table style="border: none; margin-top: 10px;">
+            <tr>
+                <td style="border: none; text-align: left; width: 30%;">
+                    Signature of Handler: <span class="signature">{{PAGE_2_HANDLER_SIGNATURE}}</span>
+                </td>
+                <td style="border: none; text-align: center; width: 40%;">
+                    <!-- 第二页印章预留位 -->
+                    <!-- <div class="seal-red">Registration Seal</div> -->
+                </td>
+                <td style="border: none; text-align: right; width: 30%;">
+                    Date of Registration: {{CARD_REGISTRATION_DATE}}
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</body>
+</html>

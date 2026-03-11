@@ -1,0 +1,238 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Residence Certificate Translation Template</title>
+    <!-- 
+    ========================================================================
+    【核心执行指令 - System Prompt】
+    若识别到所需翻译文档为框架对应文档。请提取文档中的所有中文信息并翻译为专业的英文，然后将所有的 {{大写变量名}} 替换为正确的翻译内容。如果有留白字段，请直接删除变量名保留空白标签。直接输出完整的HTML代码。
+
+    【内置生成与翻译规则指南】（AI套用时请严格遵守）
+    1. 姓名与拼音 (Name): 
+       - 中文姓名请使用拼音，首字母大写（如：Zhang San）。
+    2. 日期格式 (Date Format): 
+       - 统一使用 "Month DD, YYYY" 格式，例如：January 01, 2020。
+    3. 地址翻译 (Address Format): 
+       - 必须从小单位到大单位排列（如：Room XX, Building XX, XX Road, XX District, XX City, XX Province）。
+    4. 留白处理 (Blank Fields): 
+       - 若原件中包含“空白”或没有填写，请直接删除占位符保留空白的下划线即可，切勿填入 "N/A" 破坏排版。
+    5. 专有名词 (Proper Nouns):
+       - “派出所”统一翻译为 "Police Station"。
+       - “公安局”统一翻译为 "Public Security Bureau"。
+    ========================================================================
+    -->
+    <style>
+        /* 全局应用边框盒模型，防止 padding 撑爆布局 */
+        * {
+            box-sizing: border-box;
+        }
+
+        /* 基础页面样式优化，居中显示 */
+        body {
+            font-family: 'Times New Roman', Arial, sans-serif;
+            margin: 0;
+            padding: 40px;
+            color: #000;
+            background-color: #fff;
+            display: flex;
+            justify-content: center;
+            line-height: 1.6;
+        }
+        
+        /* 页面标准容器限制宽度，确保打印或另存为PDF时排版不散架 */
+        .page {
+            width: 100%;
+            max-width: 850px;
+            margin: 0 auto;
+        }
+
+        /* 标题样式 */
+        .header {
+            text-align: center;
+            font-size: 26px;
+            font-weight: bold;
+            margin-bottom: 40px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #000;
+            letter-spacing: 1px;
+        }
+        
+        /* 双栏弹性布局 */
+        .two-column-container {
+            display: flex;
+            justify-content: space-between;
+            gap: 50px;
+        }
+        
+        .column {
+            flex: 1;
+            min-width: 0; /* 防止长文本撑爆栏宽 */
+        }
+        
+        .section {
+            margin-bottom: 25px;
+        }
+        
+        /* 核心修复：单行字段（弹性伸缩，下划线自动补全） */
+        .info-line {
+            display: flex;
+            align-items: flex-end; /* 底部对齐以贴合下划线 */
+            margin-bottom: 12px;
+            min-height: 28px;
+        }
+        
+        .label {
+            font-weight: bold;
+            white-space: nowrap;
+            margin-right: 8px;
+        }
+        
+        .content {
+            flex: 1;
+            border-bottom: 1px solid #000;
+            padding-bottom: 2px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            min-width: 50px;
+        }
+        
+        /* 核心修复：长文本区块（如长地址），标签在上方，内容在下方划线 */
+        .info-block {
+            margin-bottom: 15px;
+        }
+
+        .info-block .label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .info-block .content-block {
+            display: block;
+            border-bottom: 1px solid #000;
+            min-height: 28px;
+            padding-bottom: 2px;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        /* 连续居住天数的特殊排版组合 */
+        .inline-group {
+            display: flex;
+            align-items: flex-end;
+        }
+        .inline-group .content {
+            flex: 0 1 auto;
+            min-width: 60px;
+            text-align: center;
+            margin: 0 8px;
+        }
+
+        /* 打印优化：去除网页默认边距 */
+        @media print {
+            body {
+                padding: 0;
+            }
+            .two-column-container {
+                page-break-inside: avoid;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="page">
+        <!-- 标题 -->
+        <div class="header">Residence Certificate</div>
+        
+        <!-- 双栏内容容器 -->
+        <div class="two-column-container">
+            
+            <!-- 左栏 -->
+            <div class="column">
+                <!-- 基本信息部分 -->
+                <div class="section">
+                    <div class="info-line">
+                        <span class="label">Name:</span> 
+                        <span class="content">{{NAME}}</span>
+                    </div>
+                    <div class="info-line">
+                        <span class="label">Gender:</span> 
+                        <span class="content">{{GENDER}}</span>
+                    </div>
+                    <div class="info-line">
+                        <span class="label">Ethnicity:</span> 
+                        <span class="content">{{ETHNICITY}}</span>
+                    </div>
+                    <div class="info-line">
+                        <span class="label">Date of Birth:</span> 
+                        <span class="content">{{DATE_OF_BIRTH}}</span>
+                    </div>
+                    <div class="info-line">
+                        <span class="label">Citizen ID Number:</span> 
+                        <span class="content">{{CITIZEN_ID_NUMBER}}</span>
+                    </div>
+                </div>
+                
+                <!-- 户籍地址部分 -->
+                <div class="section">
+                    <div class="info-block">
+                        <span class="label">Domicile Location:</span>
+                        <span class="content-block">{{DOMICILE_LOCATION}}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右栏 -->
+            <div class="column">
+                <!-- 业务编号 -->
+                <div class="section">
+                    <div class="info-line">
+                        <span class="label">Business Number:</span> 
+                        <span class="content">{{BUSINESS_NUMBER}}</span>
+                    </div>
+                </div>
+                
+                <!-- 居住地址 -->
+                <div class="section">
+                    <div class="info-block">
+                        <span class="label">Residential Address:</span>
+                        <span class="content-block">{{RESIDENTIAL_ADDRESS}}</span>
+                    </div>
+                </div>
+                
+                <!-- 派出所信息 -->
+                <div class="section">
+                    <div class="info-block">
+                        <span class="label">Assigned Police Station:</span>
+                        <span class="content-block">{{POLICE_STATION}}</span>
+                    </div>
+                </div>
+                
+                <!-- 签发单位 -->
+                <div class="section">
+                    <div class="info-block">
+                        <span class="label">Issuing Unit:</span>
+                        <span class="content-block">{{ISSUING_UNIT}}</span>
+                    </div>
+                </div>
+                
+                <!-- 有效期信息 -->
+                <div class="section">
+                    <div class="info-line">
+                        <span class="label">Period of Validity:</span> 
+                        <span class="content">{{VALIDITY_PERIOD}}</span>
+                    </div>
+                    <div class="info-line inline-group">
+                        <span class="label">Continuous Residence:</span> 
+                        <span class="content">{{RESIDENCE_DAYS}}</span> 
+                        <span>days</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</body>
+</html>

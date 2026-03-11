@@ -1,0 +1,193 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{DOCUMENT_TITLE}}</title>
+    <!-- 
+    ===========================================================================
+    【LLM 自动化翻译与生成规则 / LLM AUTO-TRANSLATION & GENERATION RULES】
+    若识别到所需翻译文档为框架对应文档。请提取文档中的所有中文信息并翻译为专业的英文，然后将所有的 {{大写变量名}} 替换为正确的翻译内容。如果有留白字段，请直接删除变量名保留空白标签。直接输出完整的HTML代码。
+
+    [专用排版与填表提示]：
+    1. 证书编号部分 (.certificate-title) 须保持左对齐、不加粗。
+    2. 主表格 (.main-table) 包含所有的房产核心信息。
+    3. "Right Status Details" 预设为 rowspan="7"，包含7个子项信息（分摊土地、结构、专有面积等），请按顺序将其翻译填入对应的 {{变量}} 中。如果有缺失项，请留空 <td> 标签，不得删除标签以免破坏表格结构。
+    4. 业务号 (.remarks-table) 为独立的表格结构，请将业务号填入对应的变量中。
+    ===========================================================================
+    -->
+    <style>
+        /* ============================
+           整体样式与字体设置
+           ============================ */
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+        }
+        
+        /* ============================
+           证书头部/标题样式
+           （明确不加粗、不居中）
+           ============================ */
+        .certificate-title {
+            font-size: 1.2em;
+            margin-bottom: 20px;
+            color: #000;
+        }
+        
+        /* ============================
+           主信息表格样式
+           ============================ */
+        .main-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 25px;
+        }
+        
+        .main-table th, 
+        .main-table td {
+            border: 1px solid #000;
+            padding: 10px 12px;
+            text-align: left;
+            vertical-align: middle;
+            font-size: 14px;
+        }
+        
+        .main-table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            width: 30%; /* 固定表头宽度，保证多份文档翻译排版一致 */
+            color: #000;
+        }
+        
+        /* ============================
+           备注与业务号部分样式
+           ============================ */
+        .remarks-section {
+            margin-bottom: 8px;
+        }
+        
+        .remarks-section strong {
+            display: block;
+            font-size: 16px;
+            color: #000;
+        }
+        
+        .remarks-table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        
+        .remarks-table td {
+            border: 1px solid #000;
+            padding: 10px 12px;
+            text-align: left;
+            vertical-align: middle;
+            font-size: 14px;
+        }
+
+        /* ============================
+           打印优化设置
+           ============================ */
+        @media print {
+            body {
+                padding: 0;
+                margin: 0;
+            }
+            .main-table th {
+                background-color: #f2f2f2 !important; /* 保证打印时背景色存在 */
+                -webkit-print-color-adjust: exact;
+            }
+        }
+    </style>
+</head>
+<body>
+    
+    <!-- ================= 证书编号区域 ================= -->
+    <div class="certificate-title">
+        {{CERTIFICATE_TITLE_AND_NO}}
+    </div>
+    
+    <!-- ================= 主信息表格区域 ================= -->
+    <table class="main-table">
+        <tr>
+            <th>Obligee</th>
+            <td>{{OBLIGEE_NAME}}</td>
+        </tr>
+        <tr>
+            <th>Co-ownership Status</th>
+            <td>{{CO_OWNERSHIP_STATUS}}</td>
+        </tr>
+        <tr>
+            <th>Location</th>
+            <td>{{PROPERTY_LOCATION}}</td>
+        </tr>
+        <tr>
+            <th>Real Estate Registration No.</th>
+            <td>{{REAL_ESTATE_REGISTRATION_NO}}</td>
+        </tr>
+        <tr>
+            <th>Right Type</th>
+            <td>{{RIGHT_TYPE}}</td>
+        </tr>
+        <tr>
+            <th>Right Nature</th>
+            <td>{{RIGHT_NATURE}}</td>
+        </tr>
+        <tr>
+            <th>Purpose</th>
+            <td>{{PURPOSE}}</td>
+        </tr>
+        <tr>
+            <th>Area</th>
+            <td>{{AREA_INFORMATION}}</td>
+        </tr>
+        <tr>
+            <th>Term of Use</th>
+            <td>{{TERM_OF_USE}}</td>
+        </tr>
+        
+        <!-- 权利状况附记项：包含7个子项，严格使用 rowspan="7" -->
+        <tr>
+            <th rowspan="7">Right Status Details</th>
+            <td>{{APPORTIONED_LAND_USE_RIGHT_AREA}}</td>
+        </tr>
+        <tr>
+            <td>{{HOUSE_STRUCTURE}}</td>
+        </tr>
+        <tr>
+            <td>{{EXCLUSIVE_BUILDING_AREA}}</td>
+        </tr>
+        <tr>
+            <td>{{APPORTIONED_BUILDING_AREA}}</td>
+        </tr>
+        <tr>
+            <td>{{TOTAL_FLOORS_OF_HOUSE}}</td>
+        </tr>
+        <tr>
+            <td>{{FLOOR_LOCATED}}</td>
+        </tr>
+        <tr>
+            <td>{{HOUSE_COMPLETION_TIME}}</td>
+        </tr>
+    </table>
+    
+    <!-- ================= 备注与业务号区域 ================= -->
+    <div class="remarks-section">
+        <strong>Remarks</strong>
+    </div>
+    
+    <!-- 业务号独立表格 -->
+    <table class="remarks-table">
+        <tr>
+            <td>Service No.: {{SERVICE_NO}}</td>
+        </tr>
+    </table>
+
+</body>
+</html>
