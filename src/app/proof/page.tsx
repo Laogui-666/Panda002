@@ -34,7 +34,7 @@ const CN_TEMPLATE = `<!DOCTYPE html>
         }
         .header {
             text-align: center;
-            font-size: 22px;
+            font-size: 28px;
             color: #C00000;
             border-bottom: 1px solid #000;
             padding-bottom: 10px;
@@ -43,9 +43,9 @@ const CN_TEMPLATE = `<!DOCTYPE html>
         }
         .title {
             text-align: center;
-            font-size: 28px;
+            font-size: 22px;
             font-weight: bold;
-            letter-spacing: 5px;
+            letter-spacing: 0px;
             margin-bottom: 25px;
             margin-top: 0;
         }
@@ -164,7 +164,7 @@ const EN_TEMPLATE = `<!DOCTYPE html>
         }
         .header {
             text-align: center;
-            font-size: 22px;
+            font-size: 28px;
             color: #C00000;
             border-bottom: 1px solid #000;
             padding-bottom: 10px;
@@ -173,9 +173,9 @@ const EN_TEMPLATE = `<!DOCTYPE html>
         }
         .title {
             text-align: center;
-            font-size: 28px;
+            font-size: 22px;
             font-weight: bold;
-            letter-spacing: 5px;
+            letter-spacing: 0px;
             margin-bottom: 20px;
         }
         .content {
@@ -534,12 +534,17 @@ const fillTemplate = (template: string, data: FormData): string => {
   }
   
   // 获取费用承担人英文（用于英文模板）
+  // 若左边费用承担人选择的是"本人"，则根据姓别分别映射为"himself"或"herself"
+  // 若左边费用承担人选择的是"公司"或"单位"，则填充翻译后的公司名称
+  // 若左边费用承担人选择的是"其他"，则填充翻译后的其他费用承担人
   let expenseBearerEn = '';
   if (data.EXPENSE_BEARER === '本人') {
     expenseBearerEn = genderReflexive; // himself/herself
   } else if (data.EXPENSE_BEARER === data.COMPANY_NATURE) {
-    expenseBearerEn = data.COMPANY_NAME_EN || data.COMPANY_NAME || 'the ' + companyNatureEn;
+    // 公司或单位 - 使用翻译后的公司名称
+    expenseBearerEn = data.COMPANY_NAME_EN || data.COMPANY_NAME || '';
   } else if (data.EXPENSE_BEARER === '其他' && data.EXPENSE_BEARER_OTHER) {
+    // 其他 - 使用翻译后的其他费用承担人（需要额外翻译）
     expenseBearerEn = data.EXPENSE_BEARER_OTHER;
   } else {
     expenseBearerEn = data.EXPENSE_BEARER;
@@ -804,53 +809,60 @@ export default function ProofPage() {
       const template = isEnglish ? EN_TEMPLATE : CN_TEMPLATE;
       const html = fillTemplate(template, templateData);
       
-      // 使用jsPDF直接创建PDF
+      // 使用jsPDF的html方法进行更好的渲染
       const { default: jsPDF } = await import('jspdf');
       
-      // 创建临时容器
+      // 创建PDF
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pageWidth = 210;
+      const pageHeight = 297;
+      const margin = 0;
+      
+      // 使用html2canvas进行高质量渲染
       const container = document.createElement('div');
       container.innerHTML = html;
       container.style.position = 'fixed';
       container.style.left = '-9999px';
       container.style.top = '0';
-      container.style.width = '210mm';
+      container.style.width = `${pageWidth}mm`;
+      container.style.padding = '0';
+      container.style.margin = '0';
       document.body.appendChild(container);
       
       // 等待内容渲染
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
       
-      // 导入html2canvas
+      // 导入html2canvas，使用更高比例
       const html2canvas = (await import('html2canvas')).default;
       
-      // 转换为canvas
+      // 转换为canvas，使用3倍缩放提高清晰度
       const canvas = await html2canvas(container, {
-        scale: 2,
+        scale: 3,
         useCORS: true,
         logging: false,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        windowWidth: 794, // A4 width in pixels at 96 DPI
+        windowWidth: Math.round(794 * 1.5),
       });
       
       // 移除临时容器
       document.body.removeChild(container);
       
-      // 创建PDF
-      const imgWidth = 210;
-      const pageHeight = 297;
+      // 计算图片尺寸
+      const imgWidth = pageWidth;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
-      const pdf = new jsPDF('p', 'mm', 'a4');
+      // 分页处理
       let heightLeft = imgHeight;
       let position = 0;
       
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
+      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', margin, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
       
       while (heightLeft > 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
-        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', 0, position, imgWidth, imgHeight);
+        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', margin, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
       }
       
@@ -903,16 +915,43 @@ export default function ProofPage() {
       }
       
       const template = isEnglish ? EN_TEMPLATE : CN_TEMPLATE;
-      const html = fillTemplate(template, templateData);
+      let html = fillTemplate(template, templateData);
       
-      // 创建Blob并下载
-      const blob = new Blob([html], { type: 'text/html' });
+      // 移除html和body标签，保留内部内容以便Word更好地解析
+      html = html.replace(/<html[^>]*>|<\/html>|<head[^>]*>.*?<\/head>|<body[^>]*>|<\/body>/gi, '');
+      
+      // 添加Word兼容性元标签
+      const wordHtml = `
+        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+        <head>
+            <meta charset="utf-8">
+            <title>${isEnglish ? 'Employment Certificate' : '在职证明'}</title>
+            <!--[if gte mso 9]>
+            <xml>
+                <w:WordDocument>
+                    <w:View>Print</w:View>
+                </w:WordDocument>
+            <![endif]-->
+            <style>
+                body { font-family: "Times New Roman", "SimSun", serif; }
+                table { border-collapse: collapse; }
+                td, th { border: 1px solid #000; padding: 8px; }
+            </style>
+        </head>
+        <body>
+            ${html}
+        </body>
+        </html>
+      `;
+      
+      // 创建Blob并下载为.doc文件
+      const blob = new Blob([wordHtml], { type: 'application/msword;charset=utf-8' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
       const fileName = isEnglish 
-        ? `Employment_Certificate_${templateData.EMPLOYEE_NAME_EN || templateData.EMPLOYEE_NAME || fields.EMPLOYEE_NAME}.html`
-        : `在职证明_${fields.EMPLOYEE_NAME}.html`;
+        ? `Employment_Certificate_${templateData.EMPLOYEE_NAME_EN || templateData.EMPLOYEE_NAME || fields.EMPLOYEE_NAME}.doc`
+        : `在职证明_${fields.EMPLOYEE_NAME}.doc`;
       link.download = fileName;
       document.body.appendChild(link);
       link.click();
