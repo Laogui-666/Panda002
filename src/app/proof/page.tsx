@@ -739,12 +739,6 @@ export default function ProofPage() {
     // 获取英文性别称呼
     const genderEn = data.GENDER === '男' ? 'Mr.' : data.GENDER === '女' ? 'Ms.' : '';
     
-    // 翻译目的地
-    const destinationEn = await translateText(data.DESTINATION === '其他' ? data.DESTINATION_OTHER : data.DESTINATION);
-    
-    // 翻译费用承担人
-    const expenseBearerEn = await translateText(data.EXPENSE_BEARER === '其他' ? data.EXPENSE_BEARER_OTHER : data.EXPENSE_BEARER);
-    
     // 并行翻译其他字段
     const [
       companyNameEn,
@@ -752,14 +746,16 @@ export default function ProofPage() {
       employeeNameEn,
       positionEn,
       leaderNameEn,
-      leaderPositionEn
+      leaderPositionEn,
+      expenseBearerOtherEn
     ] = await Promise.all([
       translateText(data.COMPANY_NAME),
       translateText(data.COMPANY_ADDRESS),
       translateText(data.EMPLOYEE_NAME),
       translateText(data.POSITION),
       translateText(data.LEADER_NAME),
-      translateText(data.LEADER_POSITION)
+      translateText(data.LEADER_POSITION),
+      translateText(data.EXPENSE_BEARER_OTHER) // 翻译"其他"费用承担人
     ]);
     
     translatedData.COMPANY_NAME_EN = companyNameEn || data.COMPANY_NAME_EN;
@@ -769,8 +765,10 @@ export default function ProofPage() {
     translatedData.LEADER_NAME = leaderNameEn || data.LEADER_NAME;
     translatedData.LEADER_POSITION = leaderPositionEn || data.LEADER_POSITION;
     translatedData.GENDER = genderEn;
-    translatedData.DESTINATION = destinationEn || data.DESTINATION;
-    translatedData.EXPENSE_BEARER = expenseBearerEn || data.EXPENSE_BEARER;
+    // 翻译"其他"费用承担人并保存
+    translatedData.EXPENSE_BEARER_OTHER = expenseBearerOtherEn || data.EXPENSE_BEARER_OTHER;
+    // 注意：不要覆盖DESTINATION和EXPENSE_BEARER，保留中文值用于fillTemplate中的映射逻辑
+    // DESTINATION和EXPENSE_BEARER_EN会在fillTemplate中根据原始中文值进行映射
     
     return translatedData;
   };
@@ -945,7 +943,9 @@ export default function ProofPage() {
       `;
       
       // 创建Blob并下载为.doc文件
-      const blob = new Blob([wordHtml], { type: 'application/msword;charset=utf-8' });
+      // 使用UTF-8编码，添加BOM确保Word正确识别中文
+      const BOM = '\uFEFF';
+      const blob = new Blob([BOM + wordHtml], { type: 'application/msword' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
