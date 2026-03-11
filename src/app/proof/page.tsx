@@ -120,7 +120,7 @@ const CN_TEMPLATE = `<!DOCTYPE html>
                 </tr>
             </tbody>
         </table>
-        <p>恳请贵方批准本申请，我们将不胜感激。</p>
+        <p>以上信息属实。</p>
         <p>特此证明！</p>
         <div class="footer-info">
             <p>负责人姓名：{{LEADER_NAME}}</p>
@@ -518,7 +518,7 @@ interface InputFieldProps {
 
 const InputField: React.FC<InputFieldProps> = ({ label, value, onChange, placeholder, required, type = 'text', options }) => {
   return (
-    <div className="transition-all duration-300 rounded-lg lg:hover:bg-slate-50 lg:hover:px-2 lg:hover:-mx-2 lg:hover:py-1">
+    <div className="transition-all duration-300">
       <label className="block text-[11px] font-medium text-[#8C9296] uppercase tracking-wider mb-1.5">
         {label} {required && <span className="text-red-400">*</span>}
       </label>
@@ -526,7 +526,7 @@ const InputField: React.FC<InputFieldProps> = ({ label, value, onChange, placeho
         <select
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full px-3 py-2.5 text-sm bg-[#FAFAFA] border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#6F8386]/20 focus:border-[#6F8386] focus:bg-white transition-all duration-200 outline-none"
+          className="w-full px-3 py-2.5 text-sm bg-[#FAFAFA] border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#6F8386]/20 focus:border-[#6F8386] focus:bg-white transition-all duration-200 outline-none hover:border-[#6F8386]/50 hover:shadow-md"
         >
           {options?.map(opt => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -537,7 +537,7 @@ const InputField: React.FC<InputFieldProps> = ({ label, value, onChange, placeho
           type="date"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full px-3 py-2.5 text-sm bg-[#FAFAFA] border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#6F8386]/20 focus:border-[#6F8386] focus:bg-white transition-all duration-200 outline-none"
+          className="w-full px-3 py-2.5 text-sm bg-[#FAFAFA] border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#6F8386]/20 focus:border-[#6F8386] focus:bg-white transition-all duration-200 outline-none hover:border-[#6F8386]/50 hover:shadow-md"
         />
       ) : (
         <input
@@ -545,7 +545,7 @@ const InputField: React.FC<InputFieldProps> = ({ label, value, onChange, placeho
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="w-full px-3 py-2.5 text-sm bg-[#FAFAFA] border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#6F8386]/20 focus:border-[#6F8386] focus:bg-white transition-all duration-200 outline-none placeholder:text-slate-300"
+          className="w-full px-3 py-2.5 text-sm bg-[#FAFAFA] border border-slate-200 rounded-xl focus:ring-2 focus:ring-[#6F8386]/20 focus:border-[#6F8386] focus:bg-white transition-all duration-200 outline-none placeholder:text-slate-300 hover:border-[#6F8386]/50 hover:shadow-md"
         />
       )}
     </div>
@@ -590,23 +590,28 @@ export default function ProofPage() {
   const translateFieldsToEnglish = async (data: FormData): Promise<FormData> => {
     const translatedData = { ...data };
     
-    // 并行翻译所有需要翻译的字段
+    // 获取英文性别称呼
+    const genderEn = data.GENDER === '男' ? 'Mr.' : data.GENDER === '女' ? 'Ms.' : '';
+    
+    // 翻译目的地
+    const destinationEn = await translateText(data.DESTINATION === '其他' ? data.DESTINATION_OTHER : data.DESTINATION);
+    
+    // 翻译费用承担人
+    const expenseBearerEn = await translateText(data.EXPENSE_BEARER === '其他' ? data.EXPENSE_BEARER_OTHER : data.EXPENSE_BEARER);
+    
+    // 并行翻译其他字段
     const [
       companyNameEn,
       employeeNameEn,
       positionEn,
       leaderNameEn,
-      leaderPositionEn,
-      destinationEn,
-      expenseBearerEn
+      leaderPositionEn
     ] = await Promise.all([
       translateText(data.COMPANY_NAME),
       translateText(data.EMPLOYEE_NAME),
       translateText(data.POSITION),
       translateText(data.LEADER_NAME),
-      translateText(data.LEADER_POSITION),
-      translateText(data.DESTINATION === '其他' ? data.DESTINATION_OTHER : data.DESTINATION),
-      translateText(data.EXPENSE_BEARER === '其他' ? data.EXPENSE_BEARER_OTHER : data.EXPENSE_BEARER)
+      translateText(data.LEADER_POSITION)
     ]);
     
     translatedData.COMPANY_NAME_EN = companyNameEn || data.COMPANY_NAME_EN;
@@ -614,6 +619,9 @@ export default function ProofPage() {
     translatedData.POSITION = positionEn || data.POSITION;
     translatedData.LEADER_NAME = leaderNameEn || data.LEADER_NAME;
     translatedData.LEADER_POSITION = leaderPositionEn || data.LEADER_POSITION;
+    translatedData.GENDER = genderEn;
+    translatedData.DESTINATION = destinationEn || data.DESTINATION;
+    translatedData.EXPENSE_BEARER = expenseBearerEn || data.EXPENSE_BEARER;
     
     return translatedData;
   };
@@ -938,7 +946,7 @@ export default function ProofPage() {
           </div>
 
           {/* 右侧预览区域 */}
-          <div className="lg:sticky lg:top-4 h-fit lg:h-[calc(100vh-8rem)]">
+          <div className="lg:sticky lg:top-4 h-fit lg:h-[calc(100vh-5rem)]">
             <div className="bg-white rounded-3xl shadow-lg p-3 lg:p-4 h-full flex flex-col">
               <h2 className="text-lg font-bold text-morandi-deep flex items-center gap-2 mb-2 lg:mb-3 flex-shrink-0">
                 <FileText className="w-5 h-5" />
