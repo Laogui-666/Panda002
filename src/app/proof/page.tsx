@@ -229,7 +229,7 @@ const EN_TEMPLATE = `<!DOCTYPE html>
         <br>
         <p>This is to certify that <span class="bold">{{EMPLOYEE_NAME_EN}}</span> has been employed by our <span class="bold">{{COMPANY_NATURE_EN}}</span> since <span class="bold">{{HIRE_YEAR}}-{{HIRE_MONTH}}-{{HIRE_DAY}}</span>, currently serving as <span class="bold">{{POSITION}}</span>.</p>
         <p>Our <span class="bold">{{COMPANY_NATURE_EN}}</span> hereby grants {{GENDER_EN}} leave from <span class="bold">{{LEAVE_START_YEAR}}-{{LEAVE_START_MONTH}}-{{LEAVE_START_DAY}}</span> to <span class="bold">{{LEAVE_END_YEAR}}-{{LEAVE_END_MONTH}}-{{LEAVE_END_DAY}}</span> for travel to <span class="bold">{{DESTINATION_EN}}</span>.</p>
-        <p>We hereby guarantee that <span class="bold">{{EMPLOYEE_NAME_EN}}</span> <span class="bold">{{GENDER_TERM}}</span> will comply with all laws and regulations of your country and return to <span class="bold">{{POSSESSIVE}}</span> home country on time. All travel expenses will be borne by <span class="bold">{{EXPENSE_BEARER_EN}}</span>.<br>
+        <p>We hereby guarantee that <span class="bold">{{EMPLOYEE_NAME_EN}}</span> will comply with all laws and regulations of your country and return to <span class="bold">{{POSSESSIVE}}</span> home country on time. All travel expenses will be borne by <span class="bold">{{EXPENSE_BEARER_EN}}</span>.<br>
 We hereby agrees and commits that <span class="bold">{{EMPLOYEE_NAME_EN}}</span> will continue to hold <span class="bold">{{POSSESSIVE}}</span> current position upon returning to <span class="bold">{{POSSESSIVE}}</span> home country.</p>
         <table>
             <thead>
@@ -1089,9 +1089,10 @@ export default function ProofPage() {
         : `在职证明_${fields.EMPLOYEE_NAME}.docx`;
       saveAs(blob, fileName);
       
-    } catch (error) {
-      console.error('生成失败:', error);
-      alert('生成失败，请重试');
+    } catch (error: any) {
+      console.error('Word生成失败:', error);
+      const errorMessage = error?.message || error?.error?.message || JSON.stringify(error) || '未知错误';
+      alert(`Word生成失败: ${errorMessage}\n\n请检查控制台获取详细信息。`);
     } finally {
       if (progressRef.current) clearInterval(progressRef.current);
       setProgress(100);
