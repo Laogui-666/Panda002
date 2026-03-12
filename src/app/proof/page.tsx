@@ -799,7 +799,7 @@ export default function ProofPage() {
   };
 
 
-  // 生成PDF函数 - 使用blob方式避免页面跳转
+  // 生成HTML函数 - 直接生成HTML文件并下载
   const generatePDF = async (isEnglish: boolean) => {
     if (!fields.COMPANY_NAME || !fields.EMPLOYEE_NAME) {
       alert('请填写公司名称和员工姓名');
@@ -833,69 +833,25 @@ export default function ProofPage() {
       const template = isEnglish ? EN_TEMPLATE : CN_TEMPLATE;
       const html = fillTemplate(template, templateData);
       
-      // 使用jsPDF的html方法进行更好的渲染
-      const { default: jsPDF } = await import('jspdf');
+      // 创建Blob并下载HTML文件
+      const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
       
-      // 创建PDF
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pageWidth = 210;
-      const pageHeight = 297;
-      const margin = 0;
-      
-      // 使用html2canvas进行高质量渲染
-      const container = document.createElement('div');
-      container.innerHTML = html;
-      container.style.position = 'fixed';
-      container.style.left = '-9999px';
-      container.style.top = '0';
-      container.style.width = `${pageWidth}mm`;
-      container.style.padding = '0';
-      container.style.margin = '0';
-      document.body.appendChild(container);
-      
-      // 等待内容渲染
-      await new Promise(resolve => setTimeout(resolve, 200));
-      
-      // 导入html2canvas，使用更高比例
-      const html2canvas = (await import('html2canvas')).default;
-      
-      // 转换为canvas，使用3倍缩放提高清晰度
-      const canvas = await html2canvas(container, {
-        scale: 3,
-        useCORS: true,
-        logging: false,
-        allowTaint: true,
-        backgroundColor: '#ffffff',
-        windowWidth: Math.round(794 * 1.5),
-      });
-      
-      // 移除临时容器
-      document.body.removeChild(container);
-      
-      // 计算图片尺寸
-      const imgWidth = pageWidth;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      
-      // 分页处理
-      let heightLeft = imgHeight;
-      let position = 0;
-      
-      pdf.addImage(canvas.toDataURL('image/png'), 'PNG', margin, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-      
-      while (heightLeft > 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(canvas.toDataURL('image/png'), 'PNG', margin, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-      
-      // 下载
+      // 创建下载链接
+      const link = document.createElement('a');
+      link.href = url;
       const fileName = isEnglish 
-        ? `Employment_Certificate_${templateData.EMPLOYEE_NAME_EN || templateData.EMPLOYEE_NAME || fields.EMPLOYEE_NAME}.pdf`
-        : `在职证明_${fields.EMPLOYEE_NAME}.pdf`;
+        ? `Employment_Certificate_${templateData.EMPLOYEE_NAME_EN || templateData.EMPLOYEE_NAME || fields.EMPLOYEE_NAME}.html`
+        : `在职证明_${fields.EMPLOYEE_NAME}.html`;
+      link.download = fileName;
       
-      pdf.save(fileName);
+      // 触发下载
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      
+      // 释放URL对象
+      URL.revokeObjectURL(url);
       
     } catch (error) {
       console.error('生成失败:', error);
@@ -1327,7 +1283,7 @@ export default function ProofPage() {
                     )}
                     <div className="text-left">
                       <div className="text-sm opacity-80">生成中文</div>
-                      <div className="text-lg">PDF 文档</div>
+                      <div className="text-lg">HTML 文档</div>
                     </div>
 
                   </button>
@@ -1358,7 +1314,7 @@ export default function ProofPage() {
                     )}
                     <div className="text-left">
                       <div className="text-sm opacity-80">生成英文</div>
-                      <div className="text-lg">PDF 文档</div>
+                      <div className="text-lg">HTML 文档</div>
                     </div>
 
                   </button>
