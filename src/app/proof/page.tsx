@@ -99,11 +99,15 @@ const CN_TEMPLATE = `<!DOCTYPE html>
     <div class="title">就业证明</div>
     <div class="content">
         <p>日期：{{ISSUING_YEAR}} 年 {{ISSUING_MONTH}} 月 {{ISSUING_DAY}} 日</p>
+
         <p>收件人：{{RECIPIENT}}</p>
         <br>
         <p class="indent">兹证明 <span class="bold">{{EMPLOYEE_NAME}}</span>{{GENDER}}自 <span class="bold">{{HIRE_YEAR}} 年 {{HIRE_MONTH}} 月 {{HIRE_DAY}} 日</span>起至今在我{{COMPANY_NATURE}}任职，现任<span class="bold">{{POSITION}}</span>职位。</p>
+
         <p class="indent">我{{COMPANY_NATURE}}批准{{EMPLOYEE_NAME}}{{GENDER}}于 <span class="bold">{{LEAVE_START_YEAR}} 年 {{LEAVE_START_MONTH}} 月 {{LEAVE_START_DAY}} 日</span> 至 <span class="bold">{{LEAVE_END_YEAR}} 年 {{LEAVE_END_MONTH}} 月 {{LEAVE_END_DAY}} 日</span> 期间请假，前往<span class="bold">{{DESTINATION}}</span>。</p>
+
         <p class="indent">我{{COMPANY_NATURE}}保证{{EMPLOYEE_NAME}}{{GENDER}}将遵守贵国法律法规并按时回国，旅行期间费用由<span class="bold">{{EXPENSE_BEARER}}</span>承担。我{{COMPANY_NATURE}}同意并承诺{{EMPLOYEE_NAME}}{{GENDER}}回国后继续留任原职。</p>
+
         <table>
             <thead>
                 <tr>
@@ -125,7 +129,9 @@ const CN_TEMPLATE = `<!DOCTYPE html>
             </tbody>
         </table>
         <p>以上信息属实。</p>
+
         <p>特此证明！</p>
+
         <div class="footer-info">
             <p>负责人姓名：{{LEADER_NAME}}</p>
             <p>负责人职位：{{LEADER_POSITION}}</p>
@@ -225,12 +231,16 @@ const EN_TEMPLATE = `<!DOCTYPE html>
     <div class="title">EMPLOYMENT CERTIFICATE</div>
     <div class="content">
         <p>Date: {{ISSUING_YEAR}}-{{ISSUING_MONTH}}-{{ISSUING_DAY}}</p>
+
         <p>To: {{RECIPIENT_EN}}</p>
         <br>
         <p>This is to certify that <span class="bold">{{EMPLOYEE_NAME_EN}}</span> has been employed by our <span class="bold">{{COMPANY_NATURE_EN}}</span> since <span class="bold">{{HIRE_YEAR}}-{{HIRE_MONTH}}-{{HIRE_DAY}}</span>, currently serving as <span class="bold">{{POSITION}}</span>.</p>
+
         <p>Our <span class="bold">{{COMPANY_NATURE_EN}}</span> hereby grants {{GENDER_EN}} leave from <span class="bold">{{LEAVE_START_YEAR}}-{{LEAVE_START_MONTH}}-{{LEAVE_START_DAY}}</span> to <span class="bold">{{LEAVE_END_YEAR}}-{{LEAVE_END_MONTH}}-{{LEAVE_END_DAY}}</span> for travel to <span class="bold">{{DESTINATION_EN}}</span>.</p>
+
         <p>We hereby guarantee that <span class="bold">{{EMPLOYEE_NAME_EN}}</span> will comply with all laws and regulations of your country and return to <span class="bold">{{POSSESSIVE}}</span> home country on time. All travel expenses will be borne by <span class="bold">{{EXPENSE_BEARER_EN}}</span>.<br>
 We hereby agrees and commits that <span class="bold">{{EMPLOYEE_NAME_EN}}</span> will continue to hold <span class="bold">{{POSSESSIVE}}</span> current position upon returning to <span class="bold">{{POSSESSIVE}}</span> home country.</p>
+
         <table>
             <thead>
                 <tr>
@@ -253,6 +263,7 @@ We hereby agrees and commits that <span class="bold">{{EMPLOYEE_NAME_EN}}</span>
         </table>
         <p>Your kind approval of this application would be highly appreciated.</p>
         <p>Yours faithfully,</p>
+
         <div class="footer-info">
             <p>Name of Supervisor: {{LEADER_NAME}}</p>
             <p>Position: {{LEADER_POSITION}}</p>
@@ -284,6 +295,7 @@ const DESTINATION_EN_MAP: Record<string, string> = {
 };
 
 
+
 // 收件人英文映射
 const RECIPIENT_EN_MAP: Record<string, string> = {
   '欧洲': 'Schengen Area Embassies and Consulates',
@@ -296,6 +308,7 @@ const RECIPIENT_EN_MAP: Record<string, string> = {
   '韩国': 'Korean Embassy and Consulate',
   '新加坡': 'Singapore Embassy and Consulate',
 };
+
 
 
 // 申根国家英文映射
@@ -329,11 +342,13 @@ const SCHENGEN_EN_MAP: Record<string, string> = {
 };
 
 
+
 // 公司性质英文映射
 const COMPANY_NATURE_EN_MAP: Record<string, string> = {
   '公司': 'company',
   '单位': 'organization',
 };
+
 
 
 // 性别英文映射
@@ -343,12 +358,14 @@ const GENDER_EN_MAP: Record<string, { term: string; possessive: string; reflexiv
 };
 
 
+
 // 获取北京时间今天的日期字符串
 const getBeijingToday = (): string => {
   const now = new Date();
   const beijingTime = new Date(now.getTime() + (8 * 60 * 60 * 1000) - now.getTimezoneOffset() * 60 * 1000);
   return beijingTime.toISOString().split('T')[0];
 };
+
 
 
 const DESTINATIONS = [
@@ -363,6 +380,7 @@ const DESTINATIONS = [
   { value: '新加坡', label: '新加坡', labelEn: 'Singapore' },
   { value: '其他', label: '其他', labelEn: 'Other' },
 ];
+
 
 
 // 申根国家列表
@@ -397,6 +415,7 @@ const SCHENGEN_COUNTRIES = [
 ];
 
 
+
 // 收件人选项
 const RECIPIENT_OPTIONS = [
   { value: '', label: '请选择收件人' },
@@ -412,11 +431,13 @@ const RECIPIENT_OPTIONS = [
 ];
 
 
+
 // 公司性质选项
 const COMPANY_NATURES = [
   { value: '公司', label: '公司' },
   { value: '单位', label: '单位' },
 ];
+
 
 
 // 性别选项
@@ -426,12 +447,14 @@ const GENDER_OPTIONS = [
 ];
 
 
+
 // 获取费用承担人选项（根据公司性质动态生成
 const getExpenseBearerOptions = (companyNature: string) => [
   { value: '本人', label: '本人' },
   { value: companyNature, label: companyNature },
   { value: '其他', label: '其他' },
 ];
+
 
 
 interface FormData {
@@ -464,6 +487,7 @@ interface FormData {
 }
 
 
+
 const getDefaultFields = (): FormData => ({
   COMPANY_NAME: '',
   COMPANY_NAME_EN: '',
@@ -492,6 +516,7 @@ const getDefaultFields = (): FormData => ({
   RECIPIENT: '',
   SCHENGEN_COUNTRY: '',
 });
+
 
 
 // 填充模板
@@ -631,6 +656,7 @@ const fillTemplate = (template: string, data: FormData): string => {
 };
 
 
+
 // 简单卡片组件
 interface SimpleCardProps {
   title: string;
@@ -638,6 +664,7 @@ interface SimpleCardProps {
   children: React.ReactNode;
   index?: number;
 }
+
 
 
 const SimpleCard: React.FC<SimpleCardProps> = ({ title, icon, children, index = 0 }) => {
@@ -664,6 +691,7 @@ const SimpleCard: React.FC<SimpleCardProps> = ({ title, icon, children, index = 
 };
 
 
+
 // 输入框组件
 interface InputFieldProps {
   label: string;
@@ -676,6 +704,7 @@ interface InputFieldProps {
   max?: string;  // 最大日期（不能晚于）
   min?: string;  // 最小日期（不能早于）
 }
+
 
 
 const InputField: React.FC<InputFieldProps> = ({ label, value, onChange, placeholder, required, type = 'text', options, max, min }) => {
@@ -725,15 +754,18 @@ export default function ProofPage() {
   const previewRef = useRef<HTMLIFrameElement>(null);
 
 
+
   const handleChange = (key: keyof FormData, value: string) => {
     setFields(prev => ({ ...prev, [key]: value }));
   };
+
 
 
   // 生成中文预览HTML
   const previewHtml = useMemo(() => {
     return fillTemplate(CN_TEMPLATE, fields);
   }, [fields]);
+
 
 
   // 翻译文本函数
@@ -755,6 +787,7 @@ export default function ProofPage() {
       return text;
     }
   };
+
 
 
   // 翻译需要英文化的数据字段
@@ -797,6 +830,7 @@ export default function ProofPage() {
     
     return translatedData;
   };
+
 
 
   // 生成HTML函数 - 直接生成HTML文件并下载
@@ -867,198 +901,6 @@ export default function ProofPage() {
   };
 
 
-  // 生成Word函数 - 使用docx库
-  const generateWord = async (isEnglish: boolean) => {
-    if (!fields.COMPANY_NAME || !fields.EMPLOYEE_NAME) {
-      alert('请填写公司名称和员工姓名');
-      return;
-    }
-
-    // 动态导入docx和file-saver
-    const [docxModule, fileSaverModule] = await Promise.all([
-      import('docx'),
-      import('file-saver')
-    ]);
-    const Document = docxModule.Document as any;
-    const Packer = docxModule.Packer as any;
-    const Paragraph = docxModule.Paragraph as any;
-    const TextRun = docxModule.TextRun as any;
-    const Table = docxModule.Table as any;
-    const TableRow = docxModule.TableRow as any;
-    const TableCell = docxModule.TableCell as any;
-    const WidthType = docxModule.WidthType as any;
-    const AlignmentType = docxModule.AlignmentType as any;
-    const { saveAs } = fileSaverModule;
-
-    const setProgress = isEnglish ? setEnProgress : setCnProgress;
-    setIsGenerating(true);
-    setProgress(0);
-    
-    progressRef.current = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 90) {
-          if (progressRef.current) clearInterval(progressRef.current);
-          return 90;
-        }
-        return prev + Math.random() * 15;
-      });
-    }, 200);
-    
-    try {
-      let templateData = fields;
-      
-      if (isEnglish) {
-        templateData = await translateFieldsToEnglish(fields);
-      }
-      
-      const template = isEnglish ? EN_TEMPLATE : CN_TEMPLATE;
-      const html = fillTemplate(template, templateData);
-      
-      // 解析HTML提取文本内容
-      const parseHtmlToDocx = (htmlContent: string) => {
-        const paragraphs: any[] = [];
-        
-        // 移除HTML标签并提取纯文本
-        const tempDiv = document.createElement('div');
-        tempDiv.innerHTML = htmlContent;
-        
-        // 获取所有文本节点
-        const processNode = (node: Node): string => {
-          if (node.nodeType === Node.TEXT_NODE) {
-            return node.textContent || '';
-          }
-          if (node.nodeType === Node.ELEMENT_NODE) {
-            const el = node as Element;
-            if (el.tagName === 'BR') return '\n';
-            if (el.tagName === 'P' || el.tagName === 'DIV') {
-              return Array.from(el.childNodes).map(processNode).join('') + '\n';
-            }
-            return Array.from(el.childNodes).map(processNode).join('');
-          }
-          return '';
-        };
-        
-        const fullText = processNode(tempDiv);
-        const lines = fullText.split('\n').filter(line => line.trim());
-        
-        lines.forEach(line => {
-          const isBold = htmlContent.includes('<span class="bold">') && line.trim().length > 0;
-          paragraphs.push(
-            new Paragraph({
-              children: [
-                new TextRun({
-                  text: line.trim(),
-                  bold: isBold,
-                  font: isEnglish ? 'Times New Roman' : 'SimSun',
-                  size: isEnglish ? 22 : 24,
-                }),
-              ],
-              spacing: { after: 200 },
-              alignment: 'left',
-            })
-          );
-        });
-        
-        return paragraphs;
-      };
-      
-      // 提取表格数据
-      const extractTableData = (htmlContent: string): string[][] => {
-        const rows: string[][] = [];
-        const tableMatch = htmlContent.match(/<table[^>]*>([\s\S]*?)<\/table>/i);
-        
-        if (tableMatch) {
-          const tempDiv = document.createElement('div');
-          tempDiv.innerHTML = tableMatch[1];
-          
-          const trElements = tempDiv.querySelectorAll('tr');
-          trElements.forEach(tr => {
-            const row: string[] = [];
-            const tdElements = tr.querySelectorAll('td, th');
-            tdElements.forEach(td => {
-              row.push(td.textContent?.trim() || '');
-            });
-            if (row.length > 0) rows.push(row);
-          });
-        }
-        
-        return rows;
-      };
-      
-      // 生成文档子元素
-      const children: any[] = parseHtmlToDocx(html);
-      
-      // 添加表格
-      const tableData = extractTableData(html);
-      if (tableData.length > 0) {
-        const tableRows = tableData.map(row => 
-          new TableRow({
-            children: row.map(cell => 
-              new TableCell({
-                children: [
-                  new Paragraph({
-                    children: [
-                      new TextRun({
-                        text: cell,
-                        font: isEnglish ? 'Times New Roman' : 'SimSun',
-                        size: 20,
-                      }),
-                    ],
-                  }),
-                ],
-                shading: undefined,
-              })
-            ),
-          })
-        );
-        
-        children.push(
-          new Table({
-            rows: tableRows,
-            width: { size: 100, type: WidthType.PERCENTAGE },
-          })
-        );
-      }
-      
-      // 创建文档
-      const doc = new Document({
-        sections: [{
-          properties: {
-            page: {
-              margin: {
-                top: 1440,
-                right: 1440,
-                bottom: 1440,
-                left: 1440,
-              },
-            },
-          },
-          children: children,
-        }],
-      });
-      
-      // 生成并下载
-      const buffer: any = await Packer.toBuffer(doc);
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-      const fileName = isEnglish 
-        ? `Employment_Certificate_${templateData.EMPLOYEE_NAME_EN || templateData.EMPLOYEE_NAME || fields.EMPLOYEE_NAME}.docx`
-        : `在职证明_${fields.EMPLOYEE_NAME}.docx`;
-      saveAs(blob, fileName);
-      
-    } catch (error: any) {
-      console.error('Word生成失败:', error);
-      const errorMessage = error?.message || error?.error?.message || JSON.stringify(error) || '未知错误';
-      alert(`Word生成失败: ${errorMessage}\n\n请检查控制台获取详细信息。`);
-    } finally {
-      if (progressRef.current) clearInterval(progressRef.current);
-      setProgress(100);
-      setTimeout(() => {
-        setIsGenerating(false);
-        setProgress(0);
-      }, 500);
-    }
-  };
-
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-morandi-cream to-morandi-blush">
@@ -1072,6 +914,7 @@ export default function ProofPage() {
             <p className="text-morandi-mist text-sm mt-1">填写信息生成中英文在职证明</p>
           </div>
         </div>
+
 
 
         {/* 左右两栏布局 */}
@@ -1097,10 +940,11 @@ export default function ProofPage() {
                         onChange={(v) => handleChange('SCHENGEN_COUNTRY', v)}
                         type="select"
                         options={SCHENGEN_COUNTRIES}
-/>
+                      />
                     </div>
                   )}
                 </div>
+
 
                 <InputField
                   label="开具日期"
@@ -1111,6 +955,7 @@ export default function ProofPage() {
                 />
               </div>
             </SimpleCard>
+
 
 
             {/* 公司信息 */}
@@ -1156,6 +1001,7 @@ export default function ProofPage() {
                 />
               </div>
             </SimpleCard>
+
 
 
             {/* 员工信息 */}
@@ -1213,6 +1059,7 @@ export default function ProofPage() {
             </SimpleCard>
 
 
+
             {/* 请假信息 */}
             <SimpleCard title="请假信息" icon={<Calendar className="w-4 h-4 text-white" />} index={3}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1264,10 +1111,11 @@ export default function ProofPage() {
             </SimpleCard>
 
 
+
             {/* 生成按钮 */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <div className="grid grid-cols-3 gap-3">
-                {/* 生成中文PDF */}
+                {/* 生成中文HTML */}
                 <div className="relative">
                   <button
                     onClick={() => generatePDF(false)}
@@ -1298,7 +1146,7 @@ export default function ProofPage() {
                   )}
                 </div>
                 
-                {/* 生成英文PDF */}
+                {/* 生成英文HTML */}
                 <div className="relative">
                   <button
                     onClick={() => generatePDF(true)}
@@ -1344,76 +1192,8 @@ export default function ProofPage() {
                 </button>
               </div>
             </div>
-
-
-            {/* 生成Word按钮 */}
-            <div className="bg-white rounded-2xl shadow-lg p-6 mt-4">
-              <div className="grid grid-cols-3 gap-3">
-                {/* 生成中文Word */}
-                <div className="relative">
-                  <button
-                    onClick={() => generateWord(false)}
-                    disabled={isGenerating}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-4 bg-gradient-to-r from-[#5D8A8E] via-[#4A7A7E] to-[#3D6A6E] text-white font-semibold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all disabled:opacity-50 group"
-                  >
-                    {isGenerating ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center group-hover:bg-white/30 transition-all">
-                        <File className="w-4 h-4" />
-                      </div>
-                    )}
-                    <div className="text-left">
-                      <div className="text-sm opacity-80">生成中文</div>
-                      <div className="text-lg">Word 文档</div>
-                    </div>
-
-                  </button>
-                  {cnProgress > 0 && (
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-transparent rounded-b-xl overflow-hidden">
-                      <div 
-                        className="h-full bg-white/80 transition-all duration-200" 
-                        style={{ width: `${cnProgress}%` }}
-                      />
-                    </div>
-                  )}
-                </div>
-                
-                {/* 生成英文Word */}
-                <div className="relative">
-                  <button
-                    onClick={() => generateWord(true)}
-                    disabled={isGenerating}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-4 bg-gradient-to-r from-[#7A9B8C] via-[#6A8B7C] to-[#5A7B6C] text-white font-semibold rounded-xl hover:shadow-lg hover:scale-[1.02] transition-all disabled:opacity-50 group"
-                  >
-                    {isGenerating ? (
-                      <Loader2 className="w-5 h-5 animate-spin" />
-                    ) : (
-                      <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center group-hover:bg-white/30 transition-all">
-                        <File className="w-4 h-4" />
-                      </div>
-                    )}
-                    <div className="text-left">
-                      <div className="text-sm opacity-80">生成英文</div>
-                      <div className="text-lg">Word 文档</div>
-                    </div>
-
-                  </button>
-                  {enProgress > 0 && (
-                    <div className="absolute bottom-0 left-0 right-0 h-1 bg-transparent rounded-b-xl overflow-hidden">
-                      <div 
-                        className="h-full bg-white/80 transition-all duration-200" 
-                        style={{ width: `${enProgress}%` }}
-                      />
-                    </div>
-                  )}
-                </div>
-                
-                {/* 空白占位 */}
-                <div></div>
-              </div>
-            </div>
           </div>
+
 
 
           {/* 右侧预览区域 */}
