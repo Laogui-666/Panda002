@@ -998,7 +998,7 @@ export default function ProofPage() {
                 }),
               ],
               spacing: { after: 200 },
-              alignment: AlignmentType.LEFT,
+              alignment: 'left',
             })
           );
         });
