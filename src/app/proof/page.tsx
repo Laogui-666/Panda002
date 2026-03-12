@@ -228,7 +228,7 @@ const EN_TEMPLATE = `<!DOCTYPE html>
         <p>To: {{RECIPIENT_EN}}</p>
         <br>
         <p>This is to certify that <span class="bold">{{EMPLOYEE_NAME_EN}}</span> has been employed by our <span class="bold">{{COMPANY_NATURE_EN}}</span> since <span class="bold">{{HIRE_YEAR}}-{{HIRE_MONTH}}-{{HIRE_DAY}}</span>, currently serving as <span class="bold">{{POSITION}}</span>.</p>
-        <p>Our <span class="bold">{{COMPANY_NATURE_EN}}</span> hereby grants {{GENDER}} leave from <span class="bold">{{LEAVE_START_YEAR}}-{{LEAVE_START_MONTH}}-{{LEAVE_START_DAY}}</span> to <span class="bold">{{LEAVE_END_YEAR}}-{{LEAVE_END_MONTH}}-{{LEAVE_END_DAY}}</span> for travel to <span class="bold">{{DESTINATION_EN}}</span>.</p>
+        <p>Our <span class="bold">{{COMPANY_NATURE_EN}}</span> hereby grants {{GENDER_EN}} leave from <span class="bold">{{LEAVE_START_YEAR}}-{{LEAVE_START_MONTH}}-{{LEAVE_START_DAY}}</span> to <span class="bold">{{LEAVE_END_YEAR}}-{{LEAVE_END_MONTH}}-{{LEAVE_END_DAY}}</span> for travel to <span class="bold">{{DESTINATION_EN}}</span>.</p>
         <p>We hereby guarantee that <span class="bold">{{EMPLOYEE_NAME_EN}}</span> <span class="bold">{{GENDER_TERM}}</span> will comply with all laws and regulations of your country and return to <span class="bold">{{POSSESSIVE}}</span> home country on time. All travel expenses will be borne by <span class="bold">{{EXPENSE_BEARER_EN}}</span>.<br>
 We hereby agrees and commits that <span class="bold">{{EMPLOYEE_NAME_EN}}</span> will continue to hold <span class="bold">{{POSSESSIVE}}</span> current position upon returning to <span class="bold">{{POSSESSIVE}}</span> home country.</p>
         <table>
@@ -283,6 +283,7 @@ const DESTINATION_EN_MAP: Record<string, string> = {
   '其他': 'Other',
 };
 
+
 // 收件人英文映射
 const RECIPIENT_EN_MAP: Record<string, string> = {
   '欧洲': 'Schengen Area Embassies and Consulates',
@@ -295,6 +296,7 @@ const RECIPIENT_EN_MAP: Record<string, string> = {
   '韩国': 'Korean Embassy and Consulate',
   '新加坡': 'Singapore Embassy and Consulate',
 };
+
 
 // 申根国家英文映射
 const SCHENGEN_EN_MAP: Record<string, string> = {
@@ -326,11 +328,13 @@ const SCHENGEN_EN_MAP: Record<string, string> = {
   '列支敦士登': 'Liechtenstein Embassy and Consulate Offices',
 };
 
+
 // 公司性质英文映射
 const COMPANY_NATURE_EN_MAP: Record<string, string> = {
   '公司': 'company',
   '单位': 'organization',
 };
+
 
 // 性别英文映射
 const GENDER_EN_MAP: Record<string, { term: string; possessive: string; reflexive: string }> = {
@@ -338,12 +342,14 @@ const GENDER_EN_MAP: Record<string, { term: string; possessive: string; reflexiv
   '女': { term: 'she', possessive: 'her', reflexive: 'herself' },
 };
 
+
 // 获取北京时间今天的日期字符串
 const getBeijingToday = (): string => {
   const now = new Date();
   const beijingTime = new Date(now.getTime() + (8 * 60 * 60 * 1000) - now.getTimezoneOffset() * 60 * 1000);
   return beijingTime.toISOString().split('T')[0];
 };
+
 
 const DESTINATIONS = [
   { value: '欧洲', label: '欧洲', labelEn: 'Europe' },
@@ -357,6 +363,7 @@ const DESTINATIONS = [
   { value: '新加坡', label: '新加坡', labelEn: 'Singapore' },
   { value: '其他', label: '其他', labelEn: 'Other' },
 ];
+
 
 // 申根国家列表
 const SCHENGEN_COUNTRIES = [
@@ -389,6 +396,7 @@ const SCHENGEN_COUNTRIES = [
   { value: '列支敦士登', label: '列支敦士登使领馆' },
 ];
 
+
 // 收件人选项
 const RECIPIENT_OPTIONS = [
   { value: '', label: '请选择收件人' },
@@ -403,11 +411,13 @@ const RECIPIENT_OPTIONS = [
   { value: '新加坡', label: '新加坡使领馆' },
 ];
 
+
 // 公司性质选项
 const COMPANY_NATURES = [
   { value: '公司', label: '公司' },
   { value: '单位', label: '单位' },
 ];
+
 
 // 性别选项
 const GENDER_OPTIONS = [
@@ -415,12 +425,14 @@ const GENDER_OPTIONS = [
   { value: '女', label: '女', text: '女士' },
 ];
 
+
 // 获取费用承担人选项（根据公司性质动态生成
 const getExpenseBearerOptions = (companyNature: string) => [
   { value: '本人', label: '本人' },
   { value: companyNature, label: companyNature },
   { value: '其他', label: '其他' },
 ];
+
 
 interface FormData {
   COMPANY_NAME: string;
@@ -436,6 +448,7 @@ interface FormData {
   POSITION: string;
   MONTHLY_SALARY: string;
   GENDER: string;
+  GENDER_EN: string;
   HIRE_DATE: string;
   LEAVE_START_DATE: string;
   LEAVE_END_DATE: string;
@@ -449,6 +462,7 @@ interface FormData {
   RECIPIENT: string;
   SCHENGEN_COUNTRY: string;
 }
+
 
 const getDefaultFields = (): FormData => ({
   COMPANY_NAME: '',
@@ -464,6 +478,7 @@ const getDefaultFields = (): FormData => ({
   POSITION: '',
   MONTHLY_SALARY: '',
   GENDER: '男',
+  GENDER_EN: '',
   HIRE_DATE: '',
   LEAVE_START_DATE: '',
   LEAVE_END_DATE: '',
@@ -477,6 +492,7 @@ const getDefaultFields = (): FormData => ({
   RECIPIENT: '',
   SCHENGEN_COUNTRY: '',
 });
+
 
 // 填充模板
 const fillTemplate = (template: string, data: FormData): string => {
@@ -582,6 +598,7 @@ const fillTemplate = (template: string, data: FormData): string => {
     '{{POSITION}}': data.POSITION || '',
     '{{MONTHLY_SALARY}}': data.MONTHLY_SALARY || '',
     '{{GENDER}}': genderText || '',
+    '{{GENDER_EN}}': data.GENDER_EN || (data.GENDER === '男' ? 'Mr.' : data.GENDER === '女' ? 'Ms.' : ''),
     '{{GENDER_TERM}}': genderTerm || '',
     '{{POSSESSIVE}}': genderPossessive || '',
     '{{RECIPIENT}}': recipient || '',
@@ -613,6 +630,7 @@ const fillTemplate = (template: string, data: FormData): string => {
   return result;
 };
 
+
 // 简单卡片组件
 interface SimpleCardProps {
   title: string;
@@ -620,6 +638,7 @@ interface SimpleCardProps {
   children: React.ReactNode;
   index?: number;
 }
+
 
 const SimpleCard: React.FC<SimpleCardProps> = ({ title, icon, children, index = 0 }) => {
   return (
@@ -644,6 +663,7 @@ const SimpleCard: React.FC<SimpleCardProps> = ({ title, icon, children, index = 
   );
 };
 
+
 // 输入框组件
 interface InputFieldProps {
   label: string;
@@ -656,6 +676,7 @@ interface InputFieldProps {
   max?: string;  // 最大日期（不能晚于）
   min?: string;  // 最小日期（不能早于）
 }
+
 
 const InputField: React.FC<InputFieldProps> = ({ label, value, onChange, placeholder, required, type = 'text', options, max, min }) => {
   return (
@@ -703,14 +724,17 @@ export default function ProofPage() {
   const progressRef = useRef<NodeJS.Timeout | null>(null);
   const previewRef = useRef<HTMLIFrameElement>(null);
 
+
   const handleChange = (key: keyof FormData, value: string) => {
     setFields(prev => ({ ...prev, [key]: value }));
   };
+
 
   // 生成中文预览HTML
   const previewHtml = useMemo(() => {
     return fillTemplate(CN_TEMPLATE, fields);
   }, [fields]);
+
 
   // 翻译文本函数
   const translateText = async (text: string): Promise<string> => {
@@ -732,11 +756,12 @@ export default function ProofPage() {
     }
   };
 
+
   // 翻译需要英文化的数据字段
   const translateFieldsToEnglish = async (data: FormData): Promise<FormData> => {
     const translatedData = { ...data };
     
-    // 获取英文性别称呼
+    // 获取英文性别称呼（保留原始值用于映射）
     const genderEn = data.GENDER === '男' ? 'Mr.' : data.GENDER === '女' ? 'Ms.' : '';
     
     // 并行翻译其他字段
@@ -764,14 +789,15 @@ export default function ProofPage() {
     translatedData.POSITION = positionEn || data.POSITION;
     translatedData.LEADER_NAME = leaderNameEn || data.LEADER_NAME;
     translatedData.LEADER_POSITION = leaderPositionEn || data.LEADER_POSITION;
-    translatedData.GENDER = genderEn;
+    // 保存英文性别称呼，但保留原始GENDER值用于fillTemplate中的映射逻辑
+    translatedData.GENDER_EN = genderEn;
     // 翻译"其他"费用承担人并保存
     translatedData.EXPENSE_BEARER_OTHER = expenseBearerOtherEn || data.EXPENSE_BEARER_OTHER;
-    // 注意：不要覆盖DESTINATION和EXPENSE_BEARER，保留中文值用于fillTemplate中的映射逻辑
-    // DESTINATION和EXPENSE_BEARER_EN会在fillTemplate中根据原始中文值进行映射
+    // 注意：不要覆盖GENDER和DESTINATION，保留中文值用于fillTemplate中的映射逻辑
     
     return translatedData;
   };
+
 
   // 生成PDF函数 - 使用blob方式避免页面跳转
   const generatePDF = async (isEnglish: boolean) => {
@@ -884,12 +910,29 @@ export default function ProofPage() {
     }
   };
 
-  // 生成Word函数
+
+  // 生成Word函数 - 使用docx库
   const generateWord = async (isEnglish: boolean) => {
     if (!fields.COMPANY_NAME || !fields.EMPLOYEE_NAME) {
       alert('请填写公司名称和员工姓名');
       return;
     }
+
+    // 动态导入docx和file-saver
+    const [docxModule, fileSaverModule] = await Promise.all([
+      import('docx'),
+      import('file-saver')
+    ]);
+    const Document = docxModule.Document as any;
+    const Packer = docxModule.Packer as any;
+    const Paragraph = docxModule.Paragraph as any;
+    const TextRun = docxModule.TextRun as any;
+    const Table = docxModule.Table as any;
+    const TableRow = docxModule.TableRow as any;
+    const TableCell = docxModule.TableCell as any;
+    const WidthType = docxModule.WidthType as any;
+    const AlignmentType = docxModule.AlignmentType as any;
+    const { saveAs } = fileSaverModule;
 
     const setProgress = isEnglish ? setEnProgress : setCnProgress;
     setIsGenerating(true);
@@ -913,50 +956,138 @@ export default function ProofPage() {
       }
       
       const template = isEnglish ? EN_TEMPLATE : CN_TEMPLATE;
-      let html = fillTemplate(template, templateData);
+      const html = fillTemplate(template, templateData);
       
-      // 移除html和body标签，保留内部内容以便Word更好地解析
-      html = html.replace(/<html[^>]*>|<\/html>|<head[^>]*>.*?<\/head>|<body[^>]*>|<\/body>/gi, '');
+      // 解析HTML提取文本内容
+      const parseHtmlToDocx = (htmlContent: string) => {
+        const paragraphs: any[] = [];
+        
+        // 移除HTML标签并提取纯文本
+        const tempDiv = document.createElement('div');
+        tempDiv.innerHTML = htmlContent;
+        
+        // 获取所有文本节点
+        const processNode = (node: Node): string => {
+          if (node.nodeType === Node.TEXT_NODE) {
+            return node.textContent || '';
+          }
+          if (node.nodeType === Node.ELEMENT_NODE) {
+            const el = node as Element;
+            if (el.tagName === 'BR') return '\n';
+            if (el.tagName === 'P' || el.tagName === 'DIV') {
+              return Array.from(el.childNodes).map(processNode).join('') + '\n';
+            }
+            return Array.from(el.childNodes).map(processNode).join('');
+          }
+          return '';
+        };
+        
+        const fullText = processNode(tempDiv);
+        const lines = fullText.split('\n').filter(line => line.trim());
+        
+        lines.forEach(line => {
+          const isBold = htmlContent.includes('<span class="bold">') && line.trim().length > 0;
+          paragraphs.push(
+            new Paragraph({
+              children: [
+                new TextRun({
+                  text: line.trim(),
+                  bold: isBold,
+                  font: isEnglish ? 'Times New Roman' : 'SimSun',
+                  size: isEnglish ? 22 : 24,
+                }),
+              ],
+              spacing: { after: 200 },
+              alignment: AlignmentType.LEFT,
+            })
+          );
+        });
+        
+        return paragraphs;
+      };
       
-      // 添加Word兼容性元标签
-      const wordHtml = `
-        <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
-        <head>
-            <meta charset="utf-8">
-            <title>${isEnglish ? 'Employment Certificate' : '在职证明'}</title>
-            <!--[if gte mso 9]>
-            <xml>
-                <w:WordDocument>
-                    <w:View>Print</w:View>
-                </w:WordDocument>
-            <![endif]-->
-            <style>
-                body { font-family: "Times New Roman", "SimSun", serif; }
-                table { border-collapse: collapse; }
-                td, th { border: 1px solid #000; padding: 8px; }
-            </style>
-        </head>
-        <body>
-            ${html}
-        </body>
-        </html>
-      `;
+      // 提取表格数据
+      const extractTableData = (htmlContent: string): string[][] => {
+        const rows: string[][] = [];
+        const tableMatch = htmlContent.match(/<table[^>]*>([\s\S]*?)<\/table>/i);
+        
+        if (tableMatch) {
+          const tempDiv = document.createElement('div');
+          tempDiv.innerHTML = tableMatch[1];
+          
+          const trElements = tempDiv.querySelectorAll('tr');
+          trElements.forEach(tr => {
+            const row: string[] = [];
+            const tdElements = tr.querySelectorAll('td, th');
+            tdElements.forEach(td => {
+              row.push(td.textContent?.trim() || '');
+            });
+            if (row.length > 0) rows.push(row);
+          });
+        }
+        
+        return rows;
+      };
       
-      // 创建Blob并下载为.doc文件
-      // 使用UTF-8编码，添加BOM确保Word正确识别中文
-      const BOM = '\uFEFF';
-      const blob = new Blob([BOM + wordHtml], { type: 'application/msword' });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
+      // 生成文档子元素
+      const children: any[] = parseHtmlToDocx(html);
+      
+      // 添加表格
+      const tableData = extractTableData(html);
+      if (tableData.length > 0) {
+        const tableRows = tableData.map(row => 
+          new TableRow({
+            children: row.map(cell => 
+              new TableCell({
+                children: [
+                  new Paragraph({
+                    children: [
+                      new TextRun({
+                        text: cell,
+                        font: isEnglish ? 'Times New Roman' : 'SimSun',
+                        size: 20,
+                      }),
+                    ],
+                  }),
+                ],
+                shading: undefined,
+              })
+            ),
+          })
+        );
+        
+        children.push(
+          new Table({
+            rows: tableRows,
+            width: { size: 100, type: WidthType.PERCENTAGE },
+          })
+        );
+      }
+      
+      // 创建文档
+      const doc = new Document({
+        sections: [{
+          properties: {
+            page: {
+              margin: {
+                top: 1440,
+                right: 1440,
+                bottom: 1440,
+                left: 1440,
+              },
+            },
+          },
+          children: children,
+        }],
+      });
+      
+      // 生成并下载
+      const buffer: any = await Packer.toBuffer(doc);
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
       const fileName = isEnglish 
-        ? `Employment_Certificate_${templateData.EMPLOYEE_NAME_EN || templateData.EMPLOYEE_NAME || fields.EMPLOYEE_NAME}.doc`
-        : `在职证明_${fields.EMPLOYEE_NAME}.doc`;
-      link.download = fileName;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+        ? `Employment_Certificate_${templateData.EMPLOYEE_NAME_EN || templateData.EMPLOYEE_NAME || fields.EMPLOYEE_NAME}.docx`
+        : `在职证明_${fields.EMPLOYEE_NAME}.docx`;
+      saveAs(blob, fileName);
       
     } catch (error) {
       console.error('生成失败:', error);
@@ -971,6 +1102,7 @@ export default function ProofPage() {
     }
   };
 
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-morandi-cream to-morandi-blush">
       <Navbar />
@@ -983,6 +1115,7 @@ export default function ProofPage() {
             <p className="text-morandi-mist text-sm mt-1">填写信息生成中英文在职证明</p>
           </div>
         </div>
+
 
         {/* 左右两栏布局 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -1007,10 +1140,11 @@ export default function ProofPage() {
                         onChange={(v) => handleChange('SCHENGEN_COUNTRY', v)}
                         type="select"
                         options={SCHENGEN_COUNTRIES}
-                      />
+/>
                     </div>
                   )}
                 </div>
+
                 <InputField
                   label="开具日期"
                   value={fields.ISSUING_DATE}
@@ -1020,6 +1154,7 @@ export default function ProofPage() {
                 />
               </div>
             </SimpleCard>
+
 
             {/* 公司信息 */}
             <SimpleCard title="公司信息" icon={<Building className="w-4 h-4 text-white" />} index={1}>
@@ -1064,6 +1199,7 @@ export default function ProofPage() {
                 />
               </div>
             </SimpleCard>
+
 
             {/* 员工信息 */}
             <SimpleCard title="员工信息" icon={<User className="w-4 h-4 text-white" />} index={2}>
@@ -1119,6 +1255,7 @@ export default function ProofPage() {
               </div>
             </SimpleCard>
 
+
             {/* 请假信息 */}
             <SimpleCard title="请假信息" icon={<Calendar className="w-4 h-4 text-white" />} index={3}>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -1169,6 +1306,7 @@ export default function ProofPage() {
               </div>
             </SimpleCard>
 
+
             {/* 生成按钮 */}
             <div className="bg-white rounded-2xl shadow-lg p-6">
               <div className="grid grid-cols-3 gap-3">
@@ -1190,6 +1328,7 @@ export default function ProofPage() {
                       <div className="text-sm opacity-80">生成中文</div>
                       <div className="text-lg">PDF 文档</div>
                     </div>
+
                   </button>
                   {/* 进度条 */}
                   {cnProgress > 0 && (
@@ -1220,6 +1359,7 @@ export default function ProofPage() {
                       <div className="text-sm opacity-80">生成英文</div>
                       <div className="text-lg">PDF 文档</div>
                     </div>
+
                   </button>
                   {/* 进度条 */}
                   {enProgress > 0 && (
@@ -1243,9 +1383,11 @@ export default function ProofPage() {
                     <div className="text-sm opacity-80">历史</div>
                     <div className="text-lg">记录</div>
                   </div>
+
                 </button>
               </div>
             </div>
+
 
             {/* 生成Word按钮 */}
             <div className="bg-white rounded-2xl shadow-lg p-6 mt-4">
@@ -1268,6 +1410,7 @@ export default function ProofPage() {
                       <div className="text-sm opacity-80">生成中文</div>
                       <div className="text-lg">Word 文档</div>
                     </div>
+
                   </button>
                   {cnProgress > 0 && (
                     <div className="absolute bottom-0 left-0 right-0 h-1 bg-transparent rounded-b-xl overflow-hidden">
@@ -1297,6 +1440,7 @@ export default function ProofPage() {
                       <div className="text-sm opacity-80">生成英文</div>
                       <div className="text-lg">Word 文档</div>
                     </div>
+
                   </button>
                   {enProgress > 0 && (
                     <div className="absolute bottom-0 left-0 right-0 h-1 bg-transparent rounded-b-xl overflow-hidden">
@@ -1313,6 +1457,7 @@ export default function ProofPage() {
               </div>
             </div>
           </div>
+
 
           {/* 右侧预览区域 */}
           <div className="lg:sticky lg:top-4 h-fit lg:h-[calc(100vh-5rem)]">
