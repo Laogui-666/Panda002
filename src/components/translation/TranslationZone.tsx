@@ -1,4 +1,3 @@
-'use client';
 
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { Upload, FileImage, FileText, AlertCircle, Loader2, Trash2, CheckCircle2, ListChecks, History, RotateCcw, Clock, Languages, Sparkles, Info, FileCode, Eye, X, Zap } from 'lucide-react';
@@ -94,101 +93,18 @@ const TranslationZone: React.FC = () => {
     }
   };
 
-  // 将PDF文件转换为多页Base64图片数组
-  const convertPdfToImages = async (pdfFile: File): Promise<string[]> => {
-    // 动态导入pdfjs-dist避免SSR问题
-    const pdfjsLib = await import('pdfjs-dist');
-    pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.min.mjs';
-    
-    const arrayBuffer = await pdfFile.arrayBuffer();
-    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-    const numPages = pdf.numPages;
-    const images: string[] = [];
-
-    for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-      const page = await pdf.getPage(pageNum);
-      const viewport = page.getViewport({ scale: 2.0 });
-      
-      const canvas = document.createElement('canvas');
-      const context = canvas.getContext('2d');
-      canvas.height = viewport.height;
-      canvas.width = viewport.width;
-      
-      await page.render({
-        canvasContext: context!,
-        viewport: viewport,
-        canvas: canvas
-      } as any).promise;
-      
-      const imageData = canvas.toDataURL('image/jpeg', 0.9);
-      images.push(imageData);
-    }
-    
-    return images;
-  };
-
-  // 文档翻译核心逻辑 - 支持PDF多页和Word
+  // 文档翻译核心逻辑 - PDF和Word直接上传OSS用URL翻译
   const translateDocument = async (file: File, lang: string): Promise<string> => {
     // 判断文件类型
     const isWord = file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' || 
                    file.name.toLowerCase().endsWith('.docx');
     const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
 
-    // PDF文件：先转换为多页图片，然后逐页翻译
-    if (isPdf) {
-      console.log('Converting PDF to images...');
-      const images = await convertPdfToImages(file);
-      console.log(`PDF converted to ${images.length} pages`);
-      
-      if (images.length === 0) {
-        throw new Error('PDF转换失败，无法读取页面');
-      }
-      
-      // 逐页翻译
-      const translatedPages: string[] = [];
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 600000); // 10分钟超时（多页需要更长时间）
-
-      try {
-        for (let i = 0; i < images.length; i++) {
-          console.log(`Translating page ${i + 1}/${images.length}...`);
-          
-          const formData = new FormData();
-          formData.append('imageUrls', JSON.stringify([images[i]]));
-          formData.append('targetLang', lang);
-          formData.append('pageNumber', String(i + 1));
-          formData.append('totalPages', String(images.length));
-
-          const response = await fetch('/api/translate/document', {
-            method: 'POST',
-            body: formData,
-            signal: controller.signal
-          });
-          
-          const result = await response.json();
-          
-          if (result.success) {
-            translatedPages.push(result.translatedHtml);
-          } else {
-            throw new Error(result.error || `第${i + 1}页翻译失败`);
-          }
-        }
-        
-        clearTimeout(timeoutId);
-        
-        // 合并所有页的翻译结果
-        return translatedPages.join('\n<div style="page-break-after: always;"></div>\n');
-      } catch (error: any) {
-        clearTimeout(timeoutId);
-        throw new Error(error.message || '多页PDF翻译失败');
-      }
-    }
-
-    // Word文档和图片：直接上传到OSS，让LLM处理
+    // PDF和Word文档：直接上传到OSS，让LLM处理
     let fileUrl: string | null = null
     
-    if (isWord) {
-      console.log(`Uploading Word to OSS...`);
+    if (isPdf || isWord) {
+console.log(`Uploading ${isPdf ? 'PDF' : 'Word'} to OSS...`);
       fileUrl = await uploadFileToOss(file);
       console.log(`File uploaded: ${fileUrl}`);
     } else {
@@ -198,11 +114,11 @@ const TranslationZone: React.FC = () => {
 
     // 调用翻译API
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 300000); // 5分钟超时
+    const timeoutId = setTimeout(() => controller.abort(), 300000);
 
     try {
       const formData = new FormData();
-      if (isWord) {
+      if (isPdf || isWord) {
         formData.append('fileUrl', fileUrl);
       } else {
         formData.append('imageUrls', JSON.stringify([fileUrl]));
@@ -473,7 +389,7 @@ const TranslationZone: React.FC = () => {
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>${filename} - Translated</title>
           <style>
-            body { font-family: 'Segoe UI', Arial, sans-serif; margin: 20px; }
+            body { font-family: 'Segoe UI', Arial,sans-serif; margin: 20px; }
             table { border-collapse: collapse; width: 100%; border: 1px solid black; }
             th, td { border: 1px solid black; padding: 8px; text-align: center; }
           </style>
@@ -504,8 +420,10 @@ const TranslationZone: React.FC = () => {
           <div className="bg-morandi-ocean/10 p-2 rounded-xl text-morandi-ocean">
             <Languages size={20} />
           </div>
+
           <div>
             <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest leading-none mb-1">目标语言</p>
+
             <select 
               value={targetLang}
               onChange={(e) => setTargetLang(e.target.value)}
@@ -520,12 +438,14 @@ const TranslationZone: React.FC = () => {
             </select>
           </div>
         </div>
+
         
         <div className="flex items-center space-x-2 text-xs font-bold text-gray-400">
            <Sparkles size={14} className="text-morandi-ocean" />
            <span>支持 PDF / JPG / PNG / Word</span>
         </div>
       </div>
+
 
       {/* 上传区域 - Morandi色系 */}
       <div 
@@ -544,12 +464,15 @@ const TranslationZone: React.FC = () => {
           <div className="w-24 h-24 bg-morandi-ocean/10 rounded-[2.5rem] flex items-center justify-center mx-auto mb-8 group-hover:scale-110 group-hover:rotate-3 transition-transform duration-500">
             <Upload className="text-morandi-ocean w-10 h-10" />
           </div>
+
           <h3 className="text-3xl font-extrabold text-morandi-deep mb-4">点击或拖拽上传签证材料</h3>
-          <p className="text-gray-400 max-w-sm mx-auto">
-            智能系统将自动识别文档结构并进行 1:1 排版翻译，<br />
-            支持多文件批量上传，一键导出 PDF 或 HTML。
+
+          <p className="text-gray-400 max-w-sm mx-auto"> 
+            智能系统将自动识别文档结构并进行 1:1 排版翻译，<br /> 
+            支持多文件批量上传，一键导出 PDF 或 HTML。 
           </p>
         </div>
+
         <input 
           type="file" 
           ref={fileInputRef} 
@@ -559,6 +482,7 @@ const TranslationZone: React.FC = () => {
           onChange={(e) => handleFiles(e.target.files)} 
         />
       </div>
+
 
       {/* 错误提示 */}
       {errorMsg && (
@@ -576,13 +500,14 @@ const TranslationZone: React.FC = () => {
         </div>
       )}
 
+
       {/* 任务队列和已完成结果 - Morandi色系 */}
       {tasks.length > 0 && (
         <div className="grid lg:grid-cols-2 gap-10 mt-16">
           {/* 任务队列 */}
           <div className="bg-white/60 backdrop-blur-md rounded-[3rem] border border-slate-100 p-8 shadow-xl">
             <div className="flex items-center justify-between mb-8">
-               <h4 className="text-lg font-bold text-morandi-deep flex items-center">
+               <h4 className="text-lg font-bold text-morandi-deep flex items-center"> 
                  <ListChecks className="mr-2 text-morandi-ocean" />
                  任务队列 ({queueTasks.length})
                </h4>
@@ -604,7 +529,9 @@ const TranslationZone: React.FC = () => {
                 <div className="py-20 text-center text-gray-300">
                   <Clock className="mx-auto mb-2 opacity-20" size={48} />
                   <p className="text-sm">暂无待处理任务</p>
+
                 </div>
+
               ) : queueTasks.map(task => (
                 <div key={task.id} className={`group bg-white p-4 rounded-[1.2rem] border border-slate-100 shadow-sm hover:shadow-md transition-all ${task.status === TaskStatus.PROCESSING ? 'ring-2 ring-morandi-ocean/20' : ''}`}>
                   <div className="flex items-center justify-between mb-2">
@@ -612,8 +539,10 @@ const TranslationZone: React.FC = () => {
                       <div className="bg-gray-50 p-2 rounded-lg text-gray-400">
                         {task.fileType.includes('image') ? <FileImage size={16} /> : <FileText size={16} />}
                       </div>
+
                       <div className="flex flex-col min-w-0">
                         <span className="font-bold text-gray-700 truncate text-sm">{task.fileName}</span>
+
                         {task.status === TaskStatus.PROCESSING && (
                           <span className="text-[9px] font-black text-morandi-ocean uppercase tracking-tighter animate-pulse">处理中...</span>
                         )}
@@ -644,6 +573,7 @@ const TranslationZone: React.FC = () => {
                       >
                         <Trash2 size={16} />
                       </button>
+
                     </div>
                   </div>
                   
@@ -652,13 +582,15 @@ const TranslationZone: React.FC = () => {
                       <div className="flex justify-between items-end mb-2">
                         <div className="flex flex-col">
                           <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider mb-0.5">当前状态</span>
-                          <span className="flex items-center text-[11px] font-extrabold text-morandi-ocean">
+
+                          <span className="flex items-center text-[11px] font-extrabold text-morandi-ocean"> 
                             <Loader2 className="animate-spin mr-1.5" size={12} />
                             {PROCESSING_STEPS.find(step => task.progress <= step.percentage)?.label || '智能处理中...'}
                           </span>
                         </div>
                         <div className="text-right">
                           <span className="text-[9px] font-bold text-gray-400 uppercase tracking-wider block mb-0.5">完成度</span>
+
                           <span className="text-xs font-black text-morandi-ocean tabular-nums">{task.progress}%</span>
                         </div>
                       </div>
@@ -683,10 +615,11 @@ const TranslationZone: React.FC = () => {
             </div>
           </div>
 
+
           {/* 已完成任务 */}
           <div className="bg-white/60 backdrop-blur-md rounded-[3rem] border border-slate-100 p-8 shadow-xl">
             <div className="flex items-center justify-between mb-8">
-               <h4 className="text-lg font-bold text-morandi-deep flex items-center">
+               <h4 className="text-lg font-bold text-morandi-deep flex items-center"> 
                  <History className="mr-2 text-green-500" />
                  已生成结果 ({completedTasks.length})
                </h4>
@@ -700,12 +633,15 @@ const TranslationZone: React.FC = () => {
                )}
             </div>
 
+
             <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
               {completedTasks.length === 0 ? (
                 <div className="py-20 text-center text-gray-300">
                   <CheckCircle2 className="mx-auto mb-2 opacity-20" size={48} />
                   <p className="text-sm">尚未有完成的翻译文件</p>
+
                 </div>
+
               ) : completedTasks.map(task => (
                 <div key={task.id} className="bg-white/80 p-4 rounded-[1.2rem] border border-green-100 shadow-sm flex flex-col space-y-3 group">
                   <div className="flex items-center justify-between">
@@ -718,7 +654,7 @@ const TranslationZone: React.FC = () => {
                           <p className="font-bold text-morandi-deep truncate text-sm leading-tight">{task.fileName}</p>
                           <span className="text-[9px] font-black text-green-500 uppercase tracking-tighter bg-green-50 px-1.5 py-0.5 rounded-md border border-green-100">完成</span>
                         </div>
-                        <p className="text-[10px] text-gray-400 mt-0.5">
+                        <p className="text-[10px] text-gray-400 mt-0.5"> 
                           {task.type === TranslationType.CERTIFIED ? '认证翻译' : '普通翻译'} · {targetLang}
                         </p>
                       </div>
@@ -767,6 +703,7 @@ const TranslationZone: React.FC = () => {
                 </h3>
                 <p className="text-sm text-gray-400 mt-1">{previewTask.fileName}</p>
               </div>
+
               <div className="flex items-center space-x-3">
                 <button 
                   onClick={() => downloadHtml(previewTask.resultUrl!, previewTask.fileName)}
@@ -776,6 +713,7 @@ const TranslationZone: React.FC = () => {
                   {isDownloading ? <Loader2 size={16} className="animate-spin" /> : <FileCode size={16} />}
                   <span>{isDownloading ? '正在生成...' : '下载 HTML'}</span>
                 </button>
+
                 <button 
                   onClick={() => setPreviewTask(null)}
                   className="p-2.5 bg-gray-100 text-gray-500 rounded-xl hover:bg-gray-200 transition-all"
@@ -788,6 +726,7 @@ const TranslationZone: React.FC = () => {
               <div className="bg-white shadow-sm border border-gray-200 rounded-lg mx-auto max-w-[210mm] min-h-[297mm] p-[10mm] preview-content">
                 <div dangerouslySetInnerHTML={{ __html: previewTask.resultUrl! }} />
               </div>
+
             </div>
           </div>
         </div>
