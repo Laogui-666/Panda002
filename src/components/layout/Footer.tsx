@@ -12,6 +12,7 @@ const footerLinks = {
     { name: '行程规划', href: '/itinerary' },
     { name: '签证评估', href: '/assessment' },
     { name: '证明文件', href: '/proofs' },
+    { name: '签证申请', href: '/services/visa' },
   ],
   partner: [
     { name: '华夏国际旅行社', href: '/partner' },
