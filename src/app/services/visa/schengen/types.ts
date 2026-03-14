@@ -42,17 +42,22 @@ export interface Step2Passport {
   residencePermitExpiry: string;
   occupation: string;
   occupationOther: string;
-  // 工作单位/学校信息
+  // 工作单位信息
   employerName: string;
   employerAddress: string;
   employerPhone: string;
   currentPosition: string;
+  // 学生学校信息
+  schoolName: string;
+  schoolAddress: string;
+  schoolPhone: string;
 }
 
 export interface Companion {
   name: string;
   relationship: string;
-  nationality: string;
+  relationshipOther: string;
+  passportNumber: string;
 }
 
 export interface Step3Travel {
@@ -210,6 +215,9 @@ export const initialStep2: Step2Passport = {
   employerAddress: '',
   employerPhone: '',
   currentPosition: '',
+  schoolName: '',
+  schoolAddress: '',
+  schoolPhone: '',
 };
 
 export const initialStep3: Step3Travel = {

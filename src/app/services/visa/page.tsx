@@ -121,25 +121,32 @@ export default function VisaServicesPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: [0.2, 0.8, 0.2, 1] }}
-          className="bg-white rounded-3xl shadow-lg py-10 px-8 mb-10"
+          className="relative bg-gradient-to-r from-morandi-deep via-morandi-ocean to-morandi-deep rounded-3xl shadow-2xl py-12 px-8 mb-10 overflow-hidden"
         >
-          <div className="text-center">
+          {/* 装饰背景 */}
+          <div className="absolute inset-0 opacity-10">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white rounded-full blur-3xl transform translate-x-20 -translate-y-20" />
+            <div className="absolute bottom-0 left-0 w-48 h-48 bg-white rounded-full blur-3xl transform -translate-x-10 translate-y-10" />
+          </div>
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-white/50 to-transparent" />
+          
+          <div className="text-center relative z-10">
             <motion.div
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, delay: 0.1 }}
             >
-              <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-morandi-ocean to-morandi-blush rounded-2xl mb-4 shadow-lg shadow-morandi-ocean/20">
-                <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <div className="inline-flex items-center justify-center w-20 h-20 bg-white/20 backdrop-blur-sm rounded-2xl mb-5 shadow-lg">
+                <svg className="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                 </svg>
               </div>
             </motion.div>
-            <h1 className="text-3xl font-bold text-morandi-deep mb-3">
+            <h1 className="text-4xl font-bold text-white mb-3 tracking-tight">
               全球申请表助手
             </h1>
-            <p className="text-morandi-mist text-lg">
-              专业、快捷的签证办理指引 · 智能填写申请表
+            <p className="text-white/80 text-lg font-light">
+              专业 · 快捷 · 智能填写申请表
             </p>
           </div>
         </motion.div>
@@ -161,10 +168,10 @@ export default function VisaServicesPage() {
                   variants={cardHoverVariants}
                   initial="rest"
                   whileHover="hover"
-                  className="bg-white rounded-2xl shadow-lg hover:shadow-xl transition-shadow duration-300 cursor-pointer h-full flex flex-col overflow-hidden group"
+                  className="bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 cursor-pointer h-full flex flex-col overflow-hidden group border border-gray-100 hover:border-morandi-ocean/30"
                 >
                   {/* 图标区域 */}
-                  <div className={`h-32 flex items-center justify-center bg-gradient-to-br ${service.color} relative overflow-hidden`}>
+                  <div className={`h-28 flex items-center justify-center bg-gradient-to-br ${service.color} relative overflow-hidden`}>
                     <motion.div
                       className="text-white relative z-10"
                       whileHover={{ scale: 1.1 }}
@@ -175,15 +182,16 @@ export default function VisaServicesPage() {
                     <div className="absolute inset-0 bg-white/10 group-hover:bg-white/20 transition-colors duration-300" />
                     {/* 装饰线条 */}
                     <div className="absolute top-0 left-0 w-full h-1 bg-white/30" />
+                    <div className="absolute bottom-0 right-0 w-16 h-16 bg-white/10 rounded-full blur-xl transform translate-x-8 translate-y-8" />
                   </div>
                   
                   {/* 内容区域 */}
-                  <div className="p-5 flex-1 flex flex-col">
+                  <div className="p-5 flex-1 flex flex-col bg-gradient-to-b from-white to-gray-50/50">
                     <h3 className="text-lg font-bold text-morandi-deep mb-1 group-hover:text-morandi-ocean transition-colors duration-300">
                       {service.name}
                     </h3>
-                    <p className="text-xs text-morandi-mist mb-3">{service.nameEn}</p>
-                    <p className="text-sm text-morandi-mist flex-1">
+                    <p className="text-xs text-morandi-mist mb-3 font-medium">{service.nameEn}</p>
+                    <p className="text-sm text-morandi-mist flex-1 leading-relaxed">
                       {service.description}
                     </p>
                     
@@ -193,7 +201,7 @@ export default function VisaServicesPage() {
                       whileHover={{ x: 4 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <span className="inline-flex items-center text-sm font-medium text-morandi-ocean group-hover:text-morandi-deep transition-colors">
+                      <span className="inline-flex items-center text-sm font-semibold text-morandi-ocean group-hover:text-morandi-deep transition-colors bg-morandi-ocean/5 group-hover:bg-morandi-ocean/10 px-3 py-1.5 rounded-lg">
                         开始办理
                         <svg className="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
@@ -212,9 +220,13 @@ export default function VisaServicesPage() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.6 }}
-          className="mt-12 bg-white rounded-2xl shadow-lg p-6"
+          className="mt-12 bg-white rounded-2xl shadow-lg p-8 border border-gray-100"
         >
-          <h2 className="text-xl font-bold text-morandi-deep mb-6 text-center">使用说明</h2>
+          <div className="flex items-center justify-center mb-8">
+            <div className="h-px bg-gradient-to-r from-transparent via-morandi-ocean/30 to-transparent flex-1 max-w-xs" />
+            <h2 className="text-xl font-bold text-morandi-deep mx-6 px-4">使用说明</h2>
+            <div className="h-px bg-gradient-to-r from-transparent via-morandi-ocean/30 to-transparent flex-1 max-w-xs" />
+          </div>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
@@ -222,7 +234,7 @@ export default function VisaServicesPage() {
                 title: '选择签证类型',
                 desc: '选择您需要申请的签证类型',
                 icon: (
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
                   </svg>
                 ),
@@ -232,7 +244,7 @@ export default function VisaServicesPage() {
                 title: '填写申请表',
                 desc: '按照步骤向导填写个人信息',
                 icon: (
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                   </svg>
                 ),
@@ -242,7 +254,7 @@ export default function VisaServicesPage() {
                 title: '导出打印',
                 desc: '生成标准申请表导出打印',
                 icon: (
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
                   </svg>
                 ),
@@ -253,13 +265,13 @@ export default function VisaServicesPage() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.7 + index * 0.1 }}
-                className="flex flex-col items-center text-center"
+                className="flex flex-col items-center text-center p-6 rounded-2xl bg-gradient-to-b from-gray-50 to-white hover:shadow-md transition-shadow duration-300"
               >
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-morandi-ocean/10 to-morandi-blush/10 flex items-center justify-center mb-4 text-morandi-ocean">
+                <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-morandi-ocean to-morandi-deep flex items-center justify-center mb-4 text-white shadow-lg shadow-morandi-ocean/20">
                   {item.icon}
                 </div>
-                <div className="text-xs font-medium text-morandi-ocean mb-2">{item.step}</div>
-                <h3 className="font-medium text-morandi-deep mb-1">{item.title}</h3>
+                <div className="text-xs font-bold text-morandi-ocean mb-2 bg-morandi-ocean/10 px-3 py-1 rounded-full">{item.step}</div>
+                <h3 className="font-bold text-morandi-deep mb-2 text-lg">{item.title}</h3>
                 <p className="text-sm text-morandi-mist">{item.desc}</p>
               </motion.div>
             ))}
