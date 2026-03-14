@@ -54,6 +54,7 @@ export interface TravelInfo {
 export interface InvitationInfo {
   hasInviter: 'yes' | 'no' | '';
   inviterName: string;
+  inviterNationality: string;
   inviterAddress: string;
   inviterPhone: string;
   inviterEmail: string;
@@ -135,6 +136,7 @@ export const initialTravelInfo: TravelInfo = {
 export const initialInvitationInfo: InvitationInfo = {
   hasInviter: '',
   inviterName: '',
+  inviterNationality: '',
   inviterAddress: '',
   inviterPhone: '',
   inviterEmail: '',
