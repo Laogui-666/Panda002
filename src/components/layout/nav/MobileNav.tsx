@@ -21,8 +21,8 @@ const navLinks = [
   { name: '签证评估', href: '/assessment' },
   { name: '一键翻译', href: '/translation' },
   { name: '证明文件', href: '/proofs' },
-  { name: '特色功能', href: '/features' },
-  { name: '签证申请', href: '/services/visa' },
+  
+  { name: '申请表助手', href: '/services/visa' },
 ];
 
 export function MobileNav({ isScrolled = false }: MobileNavProps) {

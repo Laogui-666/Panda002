@@ -1,19 +1,26 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
-import { useVisaFormStore } from '../store';
+import { useSchengenVisaStore } from './store';
 import { Input, Select, TextArea } from '@/components/ui/Input';
+import { 
+  schengenCountries, 
+  occupationOptions, 
+  maritalStatusOptions, 
+  tripPurposeOptions,
+  paymentMeansOptions 
+} from './types';
 
-// 步骤组件
+// 步骤指示器
 function StepIndicator() {
-  const { currentStep, totalSteps } = useVisaFormStore();
+  const { currentStep, totalSteps } = useSchengenVisaStore();
   
   const steps = [
     { num: 1, label: '个人信息' },
-    { num: 2, label: '证件信息' },
+    { num: 2, label: '证件与职业' },
     { num: 3, label: '行程信息' },
     { num: 4, label: '邀请住宿' },
     { num: 5, label: '费用出资' },
@@ -21,9 +28,9 @@ function StepIndicator() {
   ];
 
   return (
-    <div className="mb-8">
-      <div className="relative mb-4">
-        <div className="h-1 bg-morandi-mist/20 rounded-full overflow-hidden">
+    <div className="mb-6">
+      <div className="relative mb-3">
+        <div className="h-1.5 bg-morandi-mist/20 rounded-full overflow-hidden">
           <motion.div 
             className="h-full bg-gradient-to-r from-morandi-ocean to-morandi-blush"
             initial={{ width: 0 }}
@@ -33,11 +40,11 @@ function StepIndicator() {
         </div>
       </div>
       
-      <div className="flex justify-between">
+      <div className="flex justify-between items-center">
         {steps.map((step) => (
           <div 
             key={step.num}
-            className={`flex flex-col items-center ${
+            className={`flex flex-col items-center flex-1 ${
               step.num === currentStep 
                 ? 'text-morandi-ocean' 
                 : step.num < currentStep 
@@ -46,7 +53,7 @@ function StepIndicator() {
             }`}
           >
             <div className={`
-              w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium mb-1
+              w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium mb-1
               ${step.num === currentStep 
                 ? 'bg-morandi-ocean text-white' 
                 : step.num < currentStep 
@@ -55,7 +62,7 @@ function StepIndicator() {
             `}>
               {step.num < currentStep ? '✓' : step.num}
             </div>
-            <span className="text-xs hidden sm:block">{step.label}</span>
+            <span className="text-[10px] hidden sm:block">{step.label}</span>
           </div>
         ))}
       </div>
@@ -64,9 +71,9 @@ function StepIndicator() {
 }
 
 // Step 1: 个人信息
-function PersonalInfoStep() {
-  const { formData, updatePersonal } = useVisaFormStore();
-  const p = formData.personal;
+function Step1Personal() {
+  const { formData, updateStep1 } = useSchengenVisaStore();
+  const p = formData.step1;
   
   const isMinor = p.birthDate ? (() => {
     const birth = new Date(p.birthDate);
@@ -77,150 +84,59 @@ function PersonalInfoStep() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold text-morandi-deep mb-4">
-        <span className="inline-block w-8 h-8 bg-morandi-ocean/10 text-morandi-ocean rounded-lg text-center mr-2">1</span>
+      <h2 className="text-lg font-bold text-morandi-deep mb-4 flex items-center">
+        <span className="inline-flex items-center justify-center w-7 h-7 bg-morandi-ocean/10 text-morandi-ocean rounded-lg text-sm mr-2">01</span>
         个人信息
       </h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Input
-          label="姓 (Surname)"
-          value={p.surname}
-          onChange={(e) => updatePersonal({ surname: e.target.value })}
-          placeholder="请输入姓"
-        />
-        <Input
-          label="出生时姓氏"
-          value={p.birthSurname}
-          onChange={(e) => updatePersonal({ birthSurname: e.target.value })}
-          placeholder="如有曾用名请填写"
-        />
-        <Input
-          label="名 (Given Name)"
-          value={p.givenName}
-          onChange={(e) => updatePersonal({ givenName: e.target.value })}
-          placeholder="请输入名"
-        />
-        <Input
-          label="出生日期"
-          type="date"
-          value={p.birthDate}
-          onChange={(e) => updatePersonal({ birthDate: e.target.value })}
-        />
-        <Input
-          label="出生地"
-          value={p.birthPlace}
-          onChange={(e) => updatePersonal({ birthPlace: e.target.value })}
-          placeholder="例如：四川成都"
-        />
-        <Input
-          label="现国籍"
-          value={p.nationality}
-          onChange={(e) => updatePersonal({ nationality: e.target.value })}
-          placeholder="例如：China"
-        />
-        <Input
-          label="出生国家"
-          value={p.birthCountry}
-          onChange={(e) => updatePersonal({ birthCountry: e.target.value })}
-          placeholder="例如：China"
-        />
+        <Input label="姓 (Surname) *" value={p.surname} onChange={(e) => updateStep1({ surname: e.target.value })} placeholder="请输入姓" />
+        <Input label="出生时姓氏" value={p.birthSurname} onChange={(e) => updateStep1({ birthSurname: e.target.value })} placeholder="如有曾用名请填写" />
+        <Input label="名 (Given Name) *" value={p.givenName} onChange={(e) => updateStep1({ givenName: e.target.value })} placeholder="请输入名" />
+        <Input label="出生日期 *" type="date" value={p.birthDate} onChange={(e) => updateStep1({ birthDate: e.target.value })} />
+        <Input label="出生地 *" value={p.birthPlace} onChange={(e) => updateStep1({ birthPlace: e.target.value })} placeholder="例如：四川成都" />
+        <Input label="现国籍 *" value={p.nationality} onChange={(e) => updateStep1({ nationality: e.target.value })} placeholder="例如：China" />
+        <Input label="出生国家 *" value={p.birthCountry} onChange={(e) => updateStep1({ birthCountry: e.target.value })} placeholder="例如：China" />
         <div>
-          <label className="block text-sm font-medium text-morandi-deep mb-2">性别</label>
+          <label className="block text-sm font-medium text-morandi-deep mb-2">性别 *</label>
           <div className="flex gap-4">
             <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="gender"
-                value="male"
-                checked={p.gender === 'male'}
-                onChange={() => updatePersonal({ gender: 'male' })}
-                className="w-4 h-4 text-morandi-ocean"
-              />
-              <span>男 (Male)</span>
+              <input type="radio" name="gender" value="male" checked={p.gender === 'male'} onChange={() => updateStep1({ gender: 'male' })} className="w-4 h-4 text-morandi-ocean" />
+              <span className="text-sm">男 (Male)</span>
             </label>
             <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="radio"
-                name="gender"
-                value="female"
-                checked={p.gender === 'female'}
-                onChange={() => updatePersonal({ gender: 'female' })}
-                className="w-4 h-4 text-morandi-ocean"
-              />
-              <span>女 (Female)</span>
+              <input type="radio" name="gender" value="female" checked={p.gender === 'female'} onChange={() => updateStep1({ gender: 'female' })} className="w-4 h-4 text-morandi-ocean" />
+              <span className="text-sm">女 (Female)</span>
             </label>
           </div>
         </div>
-        <Select
-          label="婚姻状况"
-          value={p.maritalStatus}
-          onChange={(v) => updatePersonal({ maritalStatus: v })}
-          options={[
-            { value: '', label: '请选择' },
-            { value: 'single', label: '未婚 (Single)' },
-            { value: 'married', label: '已婚 (Married)' },
-            { value: 'separated', label: '分居 (Separated)' },
-            { value: 'divorced', label: '离异 (Divorced)' },
-            { value: 'widowed', label: '丧偶 (Widowed)' },
-            { value: 'other', label: '其他 (Other)' },
-          ]}
-        />
+        <Select label="婚姻状况 *" value={p.maritalStatus} onChange={(v) => updateStep1({ maritalStatus: v })} options={maritalStatusOptions} />
         {p.maritalStatus === 'other' && (
-          <Input
-            label="请说明"
-            value={p.maritalStatusOther}
-            onChange={(e) => updatePersonal({ maritalStatusOther: e.target.value })}
-            placeholder="请具体说明"
-          />
+          <Input label="请说明" value={p.maritalStatusOther} onChange={(e) => updateStep1({ maritalStatusOther: e.target.value })} placeholder="请具体说明" />
         )}
         <div className="md:col-span-2">
-          <Input
-            label="身份证号码"
-            value={p.idCard}
-            onChange={(e) => updatePersonal({ idCard: e.target.value })}
-            placeholder="请输入身份证号码"
-          />
+          <Input label="身份证号码 *" value={p.idCard} onChange={(e) => updateStep1({ idCard: e.target.value })} placeholder="请输入身份证号码" />
         </div>
       </div>
 
-      {/* 未成年人信息 */}
+      {/* 未成年人监护人信息 */}
       {isMinor && (
         <div className="mt-6 p-4 bg-morandi-ocean/5 rounded-xl border border-morandi-ocean/20">
-          <h3 className="font-medium text-morandi-deep mb-4">监护人信息 (未成年人必填)</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <Input
-              label="监护人1姓名"
-              value={p.guardian1Name}
-              onChange={(e) => updatePersonal({ guardian1Name: e.target.value })}
-              placeholder="请输入监护人1姓名"
-            />
-            <Input
-              label="监护人1国籍"
-              value={p.guardian1Nationality}
-              onChange={(e) => updatePersonal({ guardian1Nationality: e.target.value })}
-              placeholder="例如：China"
-            />
-            <Input
-              label="监护人1电话"
-              value={p.guardian1Phone}
-              onChange={(e) => updatePersonal({ guardian1Phone: e.target.value })}
-              placeholder="请输入监护人1电话"
-            />
-            <Input
-              label="监护人1邮箱"
-              type="email"
-              value={p.guardian1Email}
-              onChange={(e) => updatePersonal({ guardian1Email: e.target.value })}
-              placeholder="请输入监护人1邮箱"
-            />
+          <h3 className="font-medium text-morandi-deep mb-4 text-sm">监护人信息 (未成年人必填)</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <Input label="监护人1姓名 *" value={p.guardian1Name} onChange={(e) => updateStep1({ guardian1Name: e.target.value })} placeholder="请输入监护人1姓名" />
+            <Input label="监护人1国籍 *" value={p.guardian1Nationality} onChange={(e) => updateStep1({ guardian1Nationality: e.target.value })} placeholder="例如：China" />
+            <Input label="监护人1电话 *" value={p.guardian1Phone} onChange={(e) => updateStep1({ guardian1Phone: e.target.value })} placeholder="请输入监护人1电话" />
+            <Input label="监护人1邮箱" value={p.guardian1Email} onChange={(e) => updateStep1({ guardian1Email: e.target.value })} placeholder="请输入监护人1邮箱" />
             <div className="md:col-span-2">
-              <Input
-                label="监护人1地址"
-                value={p.guardian1Address}
-                onChange={(e) => updatePersonal({ guardian1Address: e.target.value })}
-                placeholder="请输入监护人1地址"
-              />
+              <Input label="监护人1地址 *" value={p.guardian1Address} onChange={(e) => updateStep1({ guardian1Address: e.target.value })} placeholder="请输入监护人1地址" />
+            </div>
+            <Input label="监护人2姓名" value={p.guardian2Name} onChange={(e) => updateStep1({ guardian2Name: e.target.value })} placeholder="请输入监护人2姓名" />
+            <Input label="监护人2国籍" value={p.guardian2Nationality} onChange={(e) => updateStep1({ guardian2Nationality: e.target.value })} placeholder="例如：China" />
+            <Input label="监护人2电话" value={p.guardian2Phone} onChange={(e) => updateStep1({ guardian2Phone: e.target.value })} placeholder="请输入监护人2电话" />
+            <Input label="监护人2邮箱" value={p.guardian2Email} onChange={(e) => updateStep1({ guardian2Email: e.target.value })} placeholder="请输入监护人2邮箱" />
+            <div className="md:col-span-2">
+              <Input label="监护人2地址" value={p.guardian2Address} onChange={(e) => updateStep1({ guardian2Address: e.target.value })} placeholder="请输入监护人2地址" />
             </div>
           </div>
         </div>
@@ -229,170 +145,335 @@ function PersonalInfoStep() {
   );
 }
 
-// Step 2: 证件信息
-function PassportInfoStep() {
-  const { formData, updatePassport } = useVisaFormStore();
-  const p = formData.passport;
+// Step 2: 证件与职业信息
+function Step2Passport() {
+  const { formData, updateStep2 } = useSchengenVisaStore();
+  const p = formData.step2;
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold text-morandi-deep mb-4">
-        <span className="inline-block w-8 h-8 bg-morandi-ocean/10 text-morandi-ocean rounded-lg text-center mr-2">2</span>
-        证件信息
+      <h2 className="text-lg font-bold text-morandi-deep mb-4 flex items-center">
+        <span className="inline-flex items-center justify-center w-7 h-7 bg-morandi-ocean/10 text-morandi-ocean rounded-lg text-sm mr-2">02</span>
+        证件与职业信息
       </h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Input
-          label="护照号码"
-          value={p.passportNumber}
-          onChange={(e) => updatePassport({ passportNumber: e.target.value })}
-          placeholder="请输入护照号码"
+        <Select 
+          label="护照种类 *" 
+          value={p.passportType} 
+          onChange={(v) => updateStep2({ passportType: v })} 
+          options={[
+            { value: '', label: '请选择' },
+            { value: 'ordinary', label: '普通护照 (Ordinary Passport)' },
+            { value: 'diplomatic', label: '外交护照 (Diplomatic Passport)' },
+            { value: 'service', label: '公务护照 (Service Passport)' },
+            { value: 'official', label: '因公护照 (Official Passport)' },
+            { value: 'special', label: '特殊护照 (Special Passport)' },
+            { value: 'other', label: '其他 (Other)' },
+          ]} 
         />
-        <Input
-          label="护照签发日期"
-          type="date"
-          value={p.passportIssueDate}
-          onChange={(e) => updatePassport({ passportIssueDate: e.target.value })}
-        />
-        <Input
-          label="护照到期日期"
-          type="date"
-          value={p.passportExpiryDate}
-          onChange={(e) => updatePassport({ passportExpiryDate: e.target.value })}
-        />
-        <Input
-          label="护照签发机关"
-          value={p.passportIssueAuthority}
-          onChange={(e) => updatePassport({ passportIssueAuthority: e.target.value })}
-          placeholder="请输入护照签发机关"
-        />
+        {p.passportType === 'other' && (
+          <Input label="请说明" value={p.passportTypeOther} onChange={(e) => updateStep2({ passportTypeOther: e.target.value })} placeholder="请具体说明" />
+        )}
+        <Input label="护照号码 *" value={p.passportNumber} onChange={(e) => updateStep2({ passportNumber: e.target.value })} placeholder="请输入护照号码" />
+        <Input label="护照签发日期 *" type="date" value={p.passportIssueDate} onChange={(e) => updateStep2({ passportIssueDate: e.target.value })} />
+        <Input label="有效期至 *" type="date" value={p.passportExpiry} onChange={(e) => updateStep2({ passportExpiry: e.target.value })} />
+        <Input label="签发机关 *" value={p.passportIssuer} onChange={(e) => updateStep2({ passportIssuer: e.target.value })} placeholder="例如：China" />
+        <div className="md:col-span-2">
+          <Input label="申请人住址 *" value={p.address} onChange={(e) => updateStep2({ address: e.target.value })} placeholder="请输入详细住址" />
+        </div>
+        <div className="md:col-span-2">
+          <Input label="申请人电话 *" value={p.phone} onChange={(e) => updateStep2({ phone: e.target.value })} placeholder="请输入电话号码" />
+        </div>
+        <div className="md:col-span-2">
+          <Input label="申请人电子邮箱 *" type="email" value={p.email} onChange={(e) => updateStep2({ email: e.target.value })} placeholder="请输入电子邮箱" />
+        </div>
       </div>
 
-      <div className="mt-4 p-4 bg-gray-50 rounded-xl">
-        <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="checkbox"
-            checked={p.hasOldPassport}
-            onChange={(e) => updatePassport({ hasOldPassport: e.target.checked })}
-            className="w-4 h-4 text-morandi-ocean rounded"
+      <div className="p-4 bg-gray-50 rounded-xl mt-4">
+        <label className="block text-sm font-medium text-morandi-deep mb-2">是否居住在现时国籍以外的国家？</label>
+        <div className="flex gap-4">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="residenceAbroad" value="no" checked={!p.residenceAbroad} onChange={() => updateStep2({ residenceAbroad: false })} className="w-4 h-4 text-morandi-ocean" />
+            <span className="text-sm">否 (No)</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="residenceAbroad" value="yes" checked={p.residenceAbroad} onChange={() => updateStep2({ residenceAbroad: true })} className="w-4 h-4 text-morandi-ocean" />
+            <span className="text-sm">是 (Yes)</span>
+          </label>
+        </div>
+      </div>
+
+      {p.residenceAbroad && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+          <Select 
+            label="居留证种类" 
+            value={p.residencePermitType} 
+            onChange={(v) => updateStep2({ residencePermitType: v })} 
+            options={[
+              { value: '', label: '请选择' },
+              { value: 'permanent', label: '永久居留 (Permanent)' },
+              { value: 'temporary', label: '临时居留 (Temporary)' },
+              { value: 'work', label: '工作居留 (Work Permit)' },
+              { value: 'student', label: '学习居留 (Student Visa)' },
+              { value: 'other', label: '其他 (Other)' },
+            ]} 
           />
-          <span className="text-sm text-morandi-deep">我有旧护照</span>
-        </label>
-        
-        {p.hasOldPassport && (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-            <Input
-              label="旧护照号码"
-              value={p.oldPassportNumber}
-              onChange={(e) => updatePassport({ oldPassportNumber: e.target.value })}
-              placeholder="请输入旧护照号码"
-            />
-            <Input
-              label="旧护照到期日期"
-              type="date"
-              value={p.oldPassportExpiry}
-              onChange={(e) => updatePassport({ oldPassportExpiry: e.target.value })}
-            />
-          </div>
+          <Input label="居留证有效期" type="date" value={p.residencePermitExpiry} onChange={(e) => updateStep2({ residencePermitExpiry: e.target.value })} />
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+        <Select 
+          label="现职业 *" 
+          value={p.occupation} 
+          onChange={(v) => updateStep2({ occupation: v })} 
+          options={[{ value: '', label: '请选择' }, ...occupationOptions]} 
+        />
+        {p.occupation === 'other' && (
+          <Input label="请说明职业" value={p.occupationOther} onChange={(e) => updateStep2({ occupationOther: e.target.value })} placeholder="请具体说明" />
         )}
       </div>
+
+      {/* 工作单位/学校信息 */}
+      {(p.occupation === 'employed' || p.occupation === 'self-employed' || p.occupation === 'student') && (
+        <div className="mt-6 p-4 bg-morandi-ocean/5 rounded-xl border border-morandi-ocean/20">
+          <h3 className="font-medium text-morandi-deep mb-4 text-sm">
+            {p.occupation === 'student' ? '学校信息' : '工作单位信息'}
+          </h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="md:col-span-2">
+              <Input 
+                label={p.occupation === 'student' ? '学校名称 *' : '工作单位名称 *'} 
+                value={p.employerName} 
+                onChange={(e) => updateStep2({ employerName: e.target.value })} 
+                placeholder="请输入工作单位或学校名称" 
+              />
+            </div>
+            <div className="md:col-span-2">
+              <Input label="地址 *" value={p.employerAddress} onChange={(e) => updateStep2({ employerAddress: e.target.value })} placeholder="请输入地址" />
+            </div>
+            <Input label="电话 *" value={p.employerPhone} onChange={(e) => updateStep2({ employerPhone: e.target.value })} placeholder="请输入电话号码" />
+            {p.occupation === 'employed' && (
+              <Input label="当前职位" value={p.currentPosition} onChange={(e) => updateStep2({ currentPosition: e.target.value })} placeholder="请输入您的职位" />
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 // Step 3: 行程信息
-function TravelInfoStep() {
-  const { formData, updateTravel } = useVisaFormStore();
-  const t = formData.travel;
+function Step3Travel() {
+  const { formData, updateStep3, addCompanion, removeCompanion } = useSchengenVisaStore();
+  const t = formData.step3;
+  const [showDestinationDropdown, setShowDestinationDropdown] = useState(false);
 
-  const tripPurposes = [
-    { value: 'tourism', label: '旅游 (Tourism)' },
-    { value: 'business', label: '商务 (Business)' },
-    { value: 'visit', label: '探亲访友 (Visit)' },
-    { value: 'study', label: '学习 (Study)' },
-    { value: 'work', label: '工作 (Work)' },
-    { value: 'transit', label: '过境 (Transit)' },
-    { value: 'other', label: '其他 (Other)' },
-  ];
+  // 计算停留天数
+  useEffect(() => {
+    if (t.arrivalDate && t.departureDate) {
+      const arrival = new Date(t.arrivalDate);
+      const departure = new Date(t.departureDate);
+      const diff = Math.ceil((departure.getTime() - arrival.getTime()) / (1000 * 60 * 60 * 24));
+      if (diff > 0) {
+        updateStep3({ stayDuration: diff.toString() });
+      }
+    }
+  }, [t.arrivalDate, t.departureDate]);
+
+  const toggleDestination = (country: string) => {
+    const newDestinations = t.destinations.includes(country)
+      ? t.destinations.filter(d => d !== country)
+      : [...t.destinations, country];
+    updateStep3({ destinations: newDestinations });
+  };
 
   const handlePurposeChange = (purpose: string) => {
     const newPurposes = t.tripPurpose.includes(purpose)
       ? t.tripPurpose.filter(p => p !== purpose)
       : [...t.tripPurpose, purpose];
-    updateTravel({ tripPurpose: newPurposes });
+    updateStep3({ tripPurpose: newPurposes });
+  };
+
+  const handleAddCompanion = () => {
+    addCompanion({ name: '', relationship: '', nationality: '' });
   };
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold text-morandi-deep mb-4">
-        <span className="inline-block w-8 h-8 bg-morandi-ocean/10 text-morandi-ocean rounded-lg text-center mr-2">3</span>
+      <h2 className="text-lg font-bold text-morandi-deep mb-4 flex items-center">
+        <span className="inline-flex items-center justify-center w-7 h-7 bg-morandi-ocean/10 text-morandi-ocean rounded-lg text-sm mr-2">03</span>
         行程信息
       </h2>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Input
-          label="主要目的地"
-          value={t.mainDestination}
-          onChange={(e) => updateTravel({ mainDestination: e.target.value })}
-          placeholder="例如：法国"
+        <Select 
+          label="签证申请国 *" 
+          value={t.visaApplicationCountry} 
+          onChange={(v) => updateStep3({ visaApplicationCountry: v, firstEntry: v })} 
+          options={[{ value: '', label: '请选择' }, ...schengenCountries.map(c => ({ value: c, label: c }))]} 
         />
-        <Input
-          label="首入国家"
-          value={t.firstEntryCountry}
-          onChange={(e) => updateTravel({ firstEntryCountry: e.target.value })}
-          placeholder="例如：法国"
+        
+        {/* 申根目的地多选 */}
+        <div className="relative">
+          <label className="block text-sm font-medium text-morandi-deep mb-2">预计前往申根地区 *</label>
+          <div 
+            className="w-full px-4 py-3 rounded-2xl border border-morandi-mist/30 bg-white cursor-pointer hover:border-morandi-ocean/50"
+            onClick={() => setShowDestinationDropdown(!showDestinationDropdown)}
+          >
+            {t.destinations.length > 0 ? t.destinations.join(', ') : '点击选择申根国家（可多选）'}
+          </div>
+          {showDestinationDropdown && (
+            <div className="absolute z-10 w-full mt-1 bg-white border border-morandi-mist/30 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+              {schengenCountries.map(country => (
+                <label key={country} className="flex items-center gap-2 px-4 py-2 hover:bg-morandi-ocean/5 cursor-pointer">
+                  <input 
+                    type="checkbox" 
+                    checked={t.destinations.includes(country)} 
+                    onChange={() => toggleDestination(country)}
+                    className="w-4 h-4 text-morandi-ocean rounded" 
+                  />
+                  <span className="text-sm">{country}</span>
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+        
+        <Select 
+          label="申根首入国 *" 
+          value={t.firstEntry} 
+          onChange={(v) => updateStep3({ firstEntry: v })} 
+          options={[{ value: '', label: '请选择' }, ...schengenCountries.map(c => ({ value: c, label: c }))]} 
         />
-        <Input
-          label="入境日期"
-          type="date"
-          value={t.arrivalDate}
-          onChange={(e) => updateTravel({ arrivalDate: e.target.value })}
+        <Select 
+          label="申请入境次数 *" 
+          value={t.entryType} 
+          onChange={(v) => updateStep3({ entryType: v })} 
+          options={[
+            { value: '', label: '请选择' },
+            { value: 'single', label: '一次 (Single Entry)' },
+            { value: 'two', label: '两次 (Two Entries)' },
+            { value: 'multiple', label: '多次 (Multiple Entries)' },
+          ]} 
         />
-        <Input
-          label="出境日期"
-          type="date"
-          value={t.departureDate}
-          onChange={(e) => updateTravel({ departureDate: e.target.value })}
-        />
-        <Input
-          label="预计停留天数"
-          value={t.intendedStay}
-          onChange={(e) => updateTravel({ intendedStay: e.target.value })}
-          placeholder="例如：15"
-        />
+        <Input label="预计入境日期 *" type="date" value={t.arrivalDate} onChange={(e) => updateStep3({ arrivalDate: e.target.value })} />
+        <Input label="预计离境日期 *" type="date" value={t.departureDate} onChange={(e) => updateStep3({ departureDate: e.target.value })} />
+        <Input label="预计逗留天数" value={t.stayDuration} onChange={(e) => updateStep3({ stayDuration: e.target.value })} placeholder="自动计算" readOnly />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-morandi-deep mb-2">旅行目的</label>
+      {/* 旅行目的 */}
+      <div className="mt-4">
+        <label className="block text-sm font-medium text-morandi-deep mb-2">旅程主要目的 *</label>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-          {tripPurposes.map((purpose) => (
+          {tripPurposeOptions.map(purpose => (
             <label
               key={purpose.value}
-              className={`
-                flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all
-                ${t.tripPurpose.includes(purpose.value)
+              className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all text-xs ${
+                t.tripPurpose.includes(purpose.value)
                   ? 'border-morandi-ocean bg-morandi-ocean/5'
-                  : 'border-morandi-mist/30 hover:border-morandi-ocean/50'}
-              `}
+                  : 'border-morandi-mist/30 hover:border-morandi-ocean/50'
+              }`}
             >
               <input
                 type="checkbox"
                 value={purpose.value}
                 checked={t.tripPurpose.includes(purpose.value)}
                 onChange={() => handlePurposeChange(purpose.value)}
-                className="w-4 h-4 text-morandi-ocean rounded"
+                className="w-3 h-3 text-morandi-ocean rounded"
               />
-              <span className="text-sm">{purpose.label}</span>
+              <span className="text-xs">{purpose.label}</span>
             </label>
           ))}
         </div>
         {t.tripPurpose.includes('other') && (
           <div className="mt-2">
-            <Input
-              value={t.tripPurposeOther}
-              onChange={(e) => updateTravel({ tripPurposeOther: e.target.value })}
-              placeholder="请说明其他旅行目的"
-            />
+            <Input value={t.tripPurposeOther} onChange={(e) => updateStep3({ tripPurposeOther: e.target.value })} placeholder="请说明其他旅行目的" />
+          </div>
+        )}
+      </div>
+
+      {/* 同行人信息 */}
+      <div className="mt-4 p-4 bg-gray-50 rounded-xl">
+        <label className="block text-sm font-medium text-morandi-deep mb-2">是否有同行人？</label>
+        <div className="flex gap-4 mb-3">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="hasCompanion" value="no" checked={!t.hasCompanion} onChange={() => updateStep3({ hasCompanion: false })} className="w-4 h-4 text-morandi-ocean" />
+            <span className="text-sm">否 (No)</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="hasCompanion" value="yes" checked={t.hasCompanion} onChange={() => updateStep3({ hasCompanion: true })} className="w-4 h-4 text-morandi-ocean" />
+            <span className="text-sm">是 (Yes)</span>
+          </label>
+        </div>
+        
+        {t.hasCompanion && (
+          <div>
+            {t.companions.map((companion, index) => (
+              <div key={index} className="grid grid-cols-1 md:grid-cols-4 gap-2 mb-2 p-3 bg-white rounded-lg">
+                <Input placeholder="姓名" value={companion.name} onChange={(e) => {
+                  const newCompanions = [...t.companions];
+                  newCompanions[index].name = e.target.value;
+                  updateStep3({ companions: newCompanions });
+                }} />
+                <Input placeholder="与本人关系" value={companion.relationship} onChange={(e) => {
+                  const newCompanions = [...t.companions];
+                  newCompanions[index].relationship = e.target.value;
+                  updateStep3({ companions: newCompanions });
+                }} />
+                <Input placeholder="国籍" value={companion.nationality} onChange={(e) => {
+                  const newCompanions = [...t.companions];
+                  newCompanions[index].nationality = e.target.value;
+                  updateStep3({ companions: newCompanions });
+                }} />
+                <button onClick={() => removeCompanion(index)} className="text-red-500 text-sm">删除</button>
+              </div>
+            ))}
+            <button onClick={handleAddCompanion} className="text-morandi-ocean text-sm mt-2">+ 添加同行人</button>
+          </div>
+        )}
+      </div>
+
+      {/* 之前申根签证信息 */}
+      <div className="mt-4 p-4 bg-gray-50 rounded-xl">
+        <label className="block text-sm font-medium text-morandi-deep mb-2">过去三年是否获批过申根签证？</label>
+        <div className="flex gap-4 mb-3">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="prevSchengenVisa" value="no" checked={!t.prevSchengenVisa} onChange={() => updateStep3({ prevSchengenVisa: false })} className="w-4 h-4 text-morandi-ocean" />
+            <span className="text-sm">否 (No)</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="prevSchengenVisa" value="yes" checked={t.prevSchengenVisa} onChange={() => updateStep3({ prevSchengenVisa: true })} className="w-4 h-4 text-morandi-ocean" />
+            <span className="text-sm">是 (Yes)</span>
+          </label>
+        </div>
+        
+        {t.prevSchengenVisa && (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
+            <Input label="最近一次签证编号" value={t.prevVisaNumber} onChange={(e) => updateStep3({ prevVisaNumber: e.target.value })} placeholder="例：FRA000000001" />
+            <Input label="签发日期" type="date" value={t.prevVisaIssueDate} onChange={(e) => updateStep3({ prevVisaIssueDate: e.target.value })} />
+            <Input label="有效期至" type="date" value={t.prevVisaExpiryDate} onChange={(e) => updateStep3({ prevVisaExpiryDate: e.target.value })} />
+          </div>
+        )}
+      </div>
+
+      {/* 指纹记录 */}
+      <div className="mt-4 p-4 bg-gray-50 rounded-xl">
+        <label className="block text-sm font-medium text-morandi-deep mb-2">最近一次申根签证指纹记录</label>
+        <div className="flex gap-4">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="fingerprints" value="no" checked={!t.fingerprints} onChange={() => updateStep3({ fingerprints: false })} className="w-4 h-4 text-morandi-ocean" />
+            <span className="text-sm">否 (No)</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="fingerprints" value="yes" checked={t.fingerprints} onChange={() => updateStep3({ fingerprints: true })} className="w-4 h-4 text-morandi-ocean" />
+            <span className="text-sm">是 (Yes)</span>
+          </label>
+        </div>
+        {t.fingerprints && (
+          <div className="mt-3">
+            <Input label="指纹记录日期" type="date" value={t.fingerprintsDate} onChange={(e) => updateStep3({ fingerprintsDate: e.target.value })} />
           </div>
         )}
       </div>
@@ -400,117 +481,85 @@ function TravelInfoStep() {
   );
 }
 
-// Step 4: 邀请住宿
-function InvitationInfoStep() {
-  const { formData, updateInvitation } = useVisaFormStore();
-  const inv = formData.invitation;
+// Step 4: 邀请与住宿
+function Step4Invitation() {
+  const { formData, updateStep4 } = useSchengenVisaStore();
+  const inv = formData.step4;
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold text-morandi-deep mb-4">
-        <span className="inline-block w-8 h-8 bg-morandi-ocean/10 text-morandi-ocean rounded-lg text-center mr-2">4</span>
-        邀请住宿
+      <h2 className="text-lg font-bold text-morandi-deep mb-4 flex items-center">
+        <span className="inline-flex items-center justify-center w-7 h-7 bg-morandi-ocean/10 text-morandi-ocean rounded-lg text-sm mr-2">04</span>
+        邀请与住宿信息
       </h2>
-
+      
       <div className="p-4 bg-gray-50 rounded-xl">
-        <label className="block text-sm font-medium text-morandi-deep mb-2">是否有邀请方</label>
-        <div className="flex gap-4">
+        <label className="block text-sm font-medium text-morandi-deep mb-2">是否有邀请人或邀请机构？ *</label>
+        <div className="flex flex-wrap gap-4">
           <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="radio"
-              name="hasInviter"
-              value="yes"
-              checked={inv.hasInviter === 'yes'}
-              onChange={() => updateInvitation({ hasInviter: 'yes' })}
-              className="w-4 h-4 text-morandi-ocean"
-            />
-            <span>有邀请方</span>
+            <input type="radio" name="hasInviter" value="no" checked={inv.hasInviter === 'no'} onChange={() => updateStep4({ hasInviter: 'no' })} className="w-4 h-4 text-morandi-ocean" />
+            <span className="text-sm">无 (酒店/暂住地)</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="radio"
-              name="hasInviter"
-              value="no"
-              checked={inv.hasInviter === 'no'}
-              onChange={() => updateInvitation({ hasInviter: 'no' })}
-              className="w-4 h-4 text-morandi-ocean"
-            />
-            <span>无邀请方 (住酒店)</span>
+            <input type="radio" name="hasInviter" value="personal" checked={inv.hasInviter === 'personal'} onChange={() => updateStep4({ hasInviter: 'personal' })} className="w-4 h-4 text-morandi-ocean" />
+            <span className="text-sm">个人邀请</span>
+          </label>
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input type="radio" name="hasInviter" value="organization" checked={inv.hasInviter === 'organization'} onChange={() => updateStep4({ hasInviter: 'organization' })} className="w-4 h-4 text-morandi-ocean" />
+            <span className="text-sm">公司/机构邀请</span>
           </label>
         </div>
       </div>
 
-      {inv.hasInviter === 'yes' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
-            label="邀请人姓名"
-            value={inv.inviterName}
-            onChange={(e) => updateInvitation({ inviterName: e.target.value })}
-            placeholder="请输入邀请人姓名"
-          />
-          <Input
-            label="邀请人国籍"
-            value={inv.inviterNationality}
-            onChange={(e) => updateInvitation({ inviterNationality: e.target.value })}
-            placeholder="例如：France"
-          />
-          <Input
-            label="邀请人电话"
-            value={inv.inviterPhone}
-            onChange={(e) => updateInvitation({ inviterPhone: e.target.value })}
-            placeholder="请输入邀请人电话"
-          />
-          <Input
-            label="邀请人邮箱"
-            type="email"
-            value={inv.inviterEmail}
-            onChange={(e) => updateInvitation({ inviterEmail: e.target.value })}
-            placeholder="请输入邀请人邮箱"
-          />
-          <Input
-            label="邀请公司/机构"
-            value={inv.inviterCompany}
-            onChange={(e) => updateInvitation({ inviterCompany: e.target.value })}
-            placeholder="请输入邀请公司/机构"
-          />
-          <Input
-            label="与邀请人关系"
-            value={inv.inviterRelationship}
-            onChange={(e) => updateInvitation({ inviterRelationship: e.target.value })}
-            placeholder="例如：朋友、亲属、商务"
-          />
-          <div className="md:col-span-2">
-            <Input
-              label="邀请人地址"
-              value={inv.inviterAddress}
-              onChange={(e) => updateInvitation({ inviterAddress: e.target.value })}
-              placeholder="请输入邀请人详细地址"
-            />
+      {/* 酒店信息 */}
+      {inv.hasInviter === 'no' && (
+        <div className="mt-4 p-4 bg-morandi-ocean/5 rounded-xl border border-morandi-ocean/20">
+          <h3 className="font-medium text-morandi-deep mb-3 text-sm">酒店/暂住地信息</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="md:col-span-2">
+              <Input label="酒店/暂住地名称" value={inv.hotelName} onChange={(e) => updateStep4({ hotelName: e.target.value })} placeholder="请输入酒店名称" />
+            </div>
+            <div className="md:col-span-2">
+              <Input label="地址" value={inv.hotelAddress} onChange={(e) => updateStep4({ hotelAddress: e.target.value })} placeholder="请输入地址" />
+            </div>
+            <Input label="电话" value={inv.hotelPhone} onChange={(e) => updateStep4({ hotelPhone: e.target.value })} placeholder="请输入电话号码" />
+            <Input label="电子邮件" type="email" value={inv.hotelEmail} onChange={(e) => updateStep4({ hotelEmail: e.target.value })} placeholder="请输入电子邮件" />
           </div>
         </div>
       )}
 
-      {inv.hasInviter === 'no' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
-            label="酒店名称"
-            value={inv.hotelName}
-            onChange={(e) => updateInvitation({ hotelName: e.target.value })}
-            placeholder="请输入酒店名称"
-          />
-          <Input
-            label="酒店电话"
-            value={inv.hotelPhone}
-            onChange={(e) => updateInvitation({ hotelPhone: e.target.value })}
-            placeholder="请输入酒店电话"
-          />
-          <div className="md:col-span-2">
-            <Input
-              label="酒店地址"
-              value={inv.hotelAddress}
-              onChange={(e) => updateInvitation({ hotelAddress: e.target.value })}
-              placeholder="请输入酒店地址"
-            />
+      {/* 个人邀请 */}
+      {inv.hasInviter === 'personal' && (
+        <div className="mt-4 p-4 bg-morandi-ocean/5 rounded-xl border border-morandi-ocean/20">
+          <h3 className="font-medium text-morandi-deep mb-3 text-sm">邀请人信息</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="md:col-span-2">
+              <Input label="邀请人姓名" value={inv.inviterName} onChange={(e) => updateStep4({ inviterName: e.target.value })} placeholder="请输入邀请人姓名" />
+            </div>
+            <div className="md:col-span-2">
+              <Input label="邀请人住址" value={inv.inviterAddress} onChange={(e) => updateStep4({ inviterAddress: e.target.value })} placeholder="请输入邀请人住址" />
+            </div>
+            <Input label="邀请人电话" value={inv.inviterPhone} onChange={(e) => updateStep4({ inviterPhone: e.target.value })} placeholder="请输入电话号码" />
+            <Input label="邀请人电子邮件" type="email" value={inv.inviterEmail} onChange={(e) => updateStep4({ inviterEmail: e.target.value })} placeholder="请输入电子邮件" />
+          </div>
+        </div>
+      )}
+
+      {/* 机构邀请 */}
+      {inv.hasInviter === 'organization' && (
+        <div className="mt-4 p-4 bg-morandi-ocean/5 rounded-xl border border-morandi-ocean/20">
+          <h3 className="font-medium text-morandi-deep mb-3 text-sm">邀请公司/机构信息</h3>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="md:col-span-2">
+              <Input label="公司/机构名称" value={inv.orgName} onChange={(e) => updateStep4({ orgName: e.target.value })} placeholder="请输入公司/机构名称" />
+            </div>
+            <div className="md:col-span-2">
+              <Input label="公司/机构地址" value={inv.orgAddress} onChange={(e) => updateStep4({ orgAddress: e.target.value })} placeholder="请输入公司/机构地址" />
+            </div>
+            <Input label="公司/机构电话" value={inv.orgPhone} onChange={(e) => updateStep4({ orgPhone: e.target.value })} placeholder="请输入电话号码" />
+            <Input label="联系人姓名" value={inv.orgContactName} onChange={(e) => updateStep4({ orgContactName: e.target.value })} placeholder="请输入联系人姓名" />
+            <Input label="联系人电话" value={inv.orgContactPhone} onChange={(e) => updateStep4({ orgContactPhone: e.target.value })} placeholder="请输入联系人电话" />
+            <Input label="联系人电子邮件" type="email" value={inv.orgContactEmail} onChange={(e) => updateStep4({ orgContactEmail: e.target.value })} placeholder="请输入电子邮件" />
           </div>
         </div>
       )}
@@ -519,124 +568,129 @@ function InvitationInfoStep() {
 }
 
 // Step 5: 费用出资
-function FundingInfoStep() {
-  const { formData, updateFunding } = useVisaFormStore();
-  const f = formData.funding;
+function Step5Funding() {
+  const { formData, updateStep5 } = useSchengenVisaStore();
+  const f = formData.step5;
+
+  const handleApplicantMeans = (means: string) => {
+    const newMeans = f.applicantMeans.includes(means)
+      ? f.applicantMeans.filter(m => m !== means)
+      : [...f.applicantMeans, means];
+    updateStep5({ applicantMeans: newMeans });
+  };
+
+  const handleSponsorMeans = (means: string) => {
+    const newMeans = f.sponsorMeans.includes(means)
+      ? f.sponsorMeans.filter(m => m !== means)
+      : [...f.sponsorMeans, means];
+    updateStep5({ sponsorMeans: newMeans });
+  };
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold text-morandi-deep mb-4">
-        <span className="inline-block w-8 h-8 bg-morandi-ocean/10 text-morandi-ocean rounded-lg text-center mr-2">5</span>
-        费用出资
+      <h2 className="text-lg font-bold text-morandi-deep mb-4 flex items-center">
+        <span className="inline-flex items-center justify-center w-7 h-7 bg-morandi-ocean/10 text-morandi-ocean rounded-lg text-sm mr-2">05</span>
+        费用与出资信息
       </h2>
-
+      
       <div className="p-4 bg-gray-50 rounded-xl">
-        <label className="block text-sm font-medium text-morandi-deep mb-2">费用承担方式</label>
+        <label className="block text-sm font-medium text-morandi-deep mb-2">旅费及停留费用由谁支付？ *</label>
         <div className="flex flex-wrap gap-4">
           <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="radio"
-              name="fundingSource"
-              value="applicant"
-              checked={f.fundingSource === 'applicant'}
-              onChange={() => updateFunding({ fundingSource: 'applicant' })}
-              className="w-4 h-4 text-morandi-ocean"
-            />
-            <span>本人支付</span>
+            <input type="radio" name="fundingSource" value="applicant" checked={f.fundingSource === 'applicant'} onChange={() => updateStep5({ fundingSource: 'applicant' })} className="w-4 h-4 text-morandi-ocean" />
+            <span className="text-sm">申请人本人支付</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
-            <input
-              type="radio"
-              name="fundingSource"
-              value="sponsor"
-              checked={f.fundingSource === 'sponsor'}
-              onChange={() => updateFunding({ fundingSource: 'sponsor' })}
-              className="w-4 h-4 text-morandi-ocean"
-            />
-            <span>赞助人支付</span>
+            <input type="radio" name="fundingSource" value="sponsor" checked={f.fundingSource === 'sponsor'} onChange={() => updateStep5({ fundingSource: 'sponsor' })} className="w-4 h-4 text-morandi-ocean" />
+            <span className="text-sm">赞助人/邀请方支付</span>
           </label>
         </div>
       </div>
 
-      {f.fundingSource === 'sponsor' && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input
-            label="赞助人姓名"
-            value={f.sponsorName}
-            onChange={(e) => updateFunding({ sponsorName: e.target.value })}
-            placeholder="请输入赞助人姓名"
-          />
-          <Input
-            label="赞助人国籍"
-            value={f.sponsorNationality}
-            onChange={(e) => updateFunding({ sponsorNationality: e.target.value })}
-            placeholder="例如：China"
-          />
-          <Input
-            label="赞助人电话"
-            value={f.sponsorPhone}
-            onChange={(e) => updateFunding({ sponsorPhone: e.target.value })}
-            placeholder="请输入赞助人电话"
-          />
-          <Input
-            label="赞助人邮箱"
-            type="email"
-            value={f.sponsorEmail}
-            onChange={(e) => updateFunding({ sponsorEmail: e.target.value })}
-            placeholder="请输入赞助人邮箱"
-          />
-          <Input
-            label="赞助人公司"
-            value={f.sponsorCompany}
-            onChange={(e) => updateFunding({ sponsorCompany: e.target.value })}
-            placeholder="请输入赞助人公司"
-          />
-          <Input
-            label="与赞助人关系"
-            value={f.sponsorRelationship}
-            onChange={(e) => updateFunding({ sponsorRelationship: e.target.value })}
-            placeholder="例如：父母、配偶"
-          />
-          <div className="md:col-span-2">
-            <Input
-              label="赞助人地址"
-              value={f.sponsorAddress}
-              onChange={(e) => updateFunding({ sponsorAddress: e.target.value })}
-              placeholder="请输入赞助人详细地址"
-            />
+      {/* 本人支付 */}
+      {f.fundingSource === 'applicant' && (
+        <div className="mt-4 p-4 bg-morandi-ocean/5 rounded-xl border border-morandi-ocean/20">
+          <h3 className="font-medium text-morandi-deep mb-3 text-sm">本人支付方式</h3>
+          <label className="block text-sm text-morandi-mist mb-2">支付方式 (可多选)</label>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+            {paymentMeansOptions.map(means => (
+              <label
+                key={means.value}
+                className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all text-xs ${
+                  f.applicantMeans.includes(means.value)
+                    ? 'border-morandi-ocean bg-morandi-ocean/5'
+                    : 'border-morandi-mist/30 hover:border-morandi-ocean/50'
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  value={means.value}
+                  checked={f.applicantMeans.includes(means.value)}
+                  onChange={() => handleApplicantMeans(means.value)}
+                  className="w-3 h-3 text-morandi-ocean rounded"
+                />
+                <span className="text-xs">{means.label}</span>
+              </label>
+            ))}
           </div>
-
-          <div className="md:col-span-2">
-            <label className="block text-sm font-medium text-morandi-deep mb-2">附加材料</label>
-            <div className="flex flex-wrap gap-4">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={f.sponsorBankStatement}
-                  onChange={(e) => updateFunding({ sponsorBankStatement: e.target.checked })}
-                  className="w-4 h-4 text-morandi-ocean rounded"
-                />
-                <span>银行流水</span>
-              </label>
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={f.sponsorGuaranteeLetter}
-                  onChange={(e) => updateFunding({ sponsorGuaranteeLetter: e.target.checked })}
-                  className="w-4 h-4 text-morandi-ocean rounded"
-                />
-                <span>赞助信</span>
-              </label>
+          {f.applicantMeans.includes('other') && (
+            <div className="mt-2">
+              <Input value={f.applicantMeansOther} onChange={(e) => updateStep5({ applicantMeansOther: e.target.value })} placeholder="请说明其他方式" />
             </div>
-          </div>
+          )}
         </div>
       )}
 
-      {f.fundingSource === 'applicant' && (
-        <div className="p-4 bg-morandi-ocean/5 rounded-xl">
-          <p className="text-sm text-morandi-mist">
-            您将使用本人的资金支付旅行费用。请确保您有足够的经济能力证明。
-          </p>
+      {/* 赞助人支付 */}
+      {f.fundingSource === 'sponsor' && (
+        <div className="mt-4 p-4 bg-morandi-ocean/5 rounded-xl border border-morandi-ocean/20">
+          <h3 className="font-medium text-morandi-deep mb-3 text-sm">赞助人支付信息</h3>
+          
+          <div className="mb-3">
+            <label className="block text-sm text-morandi-mist mb-2">赞助人类型</label>
+            <div className="flex gap-4">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="sponsorType" value="inviter" checked={f.sponsorType === 'inviter'} onChange={() => updateStep5({ sponsorType: 'inviter' })} className="w-4 h-4 text-morandi-ocean" />
+                <span className="text-sm">邀请人或邀请方</span>
+              </label>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input type="radio" name="sponsorType" value="other" checked={f.sponsorType === 'other'} onChange={() => updateStep5({ sponsorType: 'other' })} className="w-4 h-4 text-morandi-ocean" />
+                <span className="text-sm">其他赞助人</span>
+              </label>
+            </div>
+          </div>
+
+          {f.sponsorType === 'other' && (
+            <div className="mb-3">
+              <Input label="赞助人姓名" value={f.otherSponsorName} onChange={(e) => updateStep5({ otherSponsorName: e.target.value })} placeholder="请输入赞助人姓名" />
+            </div>
+          )}
+
+          <div className="mb-3">
+            <label className="block text-sm text-morandi-mist mb-2">支付方式 (可多选)</label>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+              <label className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all text-xs ${f.sponsorMeans.includes('cash') ? 'border-morandi-ocean bg-morandi-ocean/5' : 'border-morandi-mist/30'}`}>
+                <input type="checkbox" checked={f.sponsorMeans.includes('cash')} onChange={() => handleSponsorMeans('cash')} className="w-3 h-3 text-morandi-ocean rounded" />
+                <span className="text-xs">现金 (Cash)</span>
+              </label>
+              <label className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all text-xs ${f.sponsorMeans.includes('accommodationProvided') ? 'border-morandi-ocean bg-morandi-ocean/5' : 'border-morandi-mist/30'}`}>
+                <input type="checkbox" checked={f.sponsorMeans.includes('accommodationProvided')} onChange={() => handleSponsorMeans('accommodationProvided')} className="w-3 h-3 text-morandi-ocean rounded" />
+                <span className="text-xs">提供住宿</span>
+              </label>
+              <label className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all text-xs ${f.sponsorMeans.includes('allExpenses') ? 'border-morandi-ocean bg-morandi-ocean/5' : 'border-morandi-mist/30'}`}>
+                <input type="checkbox" checked={f.sponsorMeans.includes('allExpenses')} onChange={() => handleSponsorMeans('allExpenses')} className="w-3 h-3 text-morandi-ocean rounded" />
+                <span className="text-xs">支付所有开支</span>
+              </label>
+              <label className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all text-xs ${f.sponsorMeans.includes('prepaidTransport') ? 'border-morandi-ocean bg-morandi-ocean/5' : 'border-morandi-mist/30'}`}>
+                <input type="checkbox" checked={f.sponsorMeans.includes('prepaidTransport')} onChange={() => handleSponsorMeans('prepaidTransport')} className="w-3 h-3 text-morandi-ocean rounded" />
+                <span className="text-xs">预付交通</span>
+              </label>
+              <label className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all text-xs ${f.sponsorMeans.includes('sponsorOther') ? 'border-morandi-ocean bg-morandi-ocean/5' : 'border-morandi-mist/30'}`}>
+                <input type="checkbox" checked={f.sponsorMeans.includes('sponsorOther')} onChange={() => handleSponsorMeans('sponsorOther')} className="w-3 h-3 text-morandi-ocean rounded" />
+                <span className="text-xs">其他</span>
+              </label>
+            </div>
+          </div>
         </div>
       )}
     </div>
@@ -644,11 +698,11 @@ function FundingInfoStep() {
 }
 
 // Step 6: 预览导出
-function PreviewStep() {
-  const { formData } = useVisaFormStore();
+function Step6Preview() {
+  const { formData } = useSchengenVisaStore();
+  const { step1, step2, step3, step4, step5 } = formData;
 
   const handleExport = () => {
-    // 生成Word文档
     const content = `
       <html>
       <head>
@@ -657,74 +711,74 @@ function PreviewStep() {
         <style>
           body { font-family: 'Noto Sans SC', Arial, sans-serif; padding: 40px; }
           h1 { text-align: center; color: #333; }
-          table { width: 100%; border-collapse: collapse; margin: 20px 0; }
-          th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+          table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+          th, td { border: 1px solid #ddd; padding: 8px; text-align: left; font-size: 12px; }
           th { background: #f5f5f5; }
-          .section { margin: 30px 0; }
+          .section { margin: 20px 0; }
+          .section-title { font-size: 16px; font-weight: bold; margin-bottom: 10px; }
         </style>
       </head>
       <body>
         <h1>申根签证申请表</h1>
         
         <div class="section">
-          <h2>一、个人信息</h2>
+          <div class="section-title">一、个人信息</div>
           <table>
-            <tr><th>姓</th><td>${formData.personal.surname}</td><th>名</th><td>${formData.personal.givenName}</td></tr>
-            <tr><th>出生日期</th><td>${formData.personal.birthDate}</td><th>出生地</th><td>${formData.personal.birthPlace}</td></tr>
-            <tr><th>国籍</th><td>${formData.personal.nationality}</td><th>性别</th><td>${formData.personal.gender === 'male' ? '男' : '女'}</td></tr>
-            <tr><th>婚姻状况</th><td>${formData.personal.maritalStatus}</td><th>身份证号</th><td>${formData.personal.idCard}</td></tr>
+            <tr><th>姓</th><td>${step1.surname}</td><th>名</th><td>${step1.givenName}</td></tr>
+            <tr><th>出生日期</th><td>${step1.birthDate}</td><th>出生地</th><td>${step1.birthPlace}</td></tr>
+            <tr><th>国籍</th><td>${step1.nationality}</td><th>性别</th><td>${step1.gender === 'male' ? '男' : '女'}</td></tr>
+            <tr><th>婚姻状况</th><td>${step1.maritalStatus}</td><th>身份证号</th><td>${step1.idCard}</td></tr>
           </table>
         </div>
 
         <div class="section">
-          <h2>二、护照信息</h2>
+          <div class="section-title">二、证件信息</div>
           <table>
-            <tr><th>护照号码</th><td>${formData.passport.passportNumber}</td></tr>
-            <tr><th>签发日期</th><td>${formData.passport.passportIssueDate}</td><th>到期日期</th><td>${formData.passport.passportExpiryDate}</td></tr>
-            <tr><th>签发机关</th><td colspan="3">${formData.passport.passportIssueAuthority}</td></tr>
+            <tr><th>护照号码</th><td>${step2.passportNumber}</td></tr>
+            <tr><th>签发日期</th><td>${step2.passportIssueDate}</td><th>有效期至</th><td>${step2.passportExpiry}</td></tr>
+            <tr><th>签发机关</th><td colspan="3">${step2.passportIssuer}</td></tr>
+            <tr><th>住址</th><td colspan="3">${step2.address}</td></tr>
+            <tr><th>电话</th><td>${step2.phone}</td><th>邮箱</th><td>${step2.email}</td></tr>
           </table>
         </div>
 
         <div class="section">
-          <h2>三、行程信息</h2>
+          <div class="section-title">三、行程信息</div>
           <table>
-            <tr><th>主要目的地</th><td>${formData.travel.mainDestination}</td><th>首入国家</th><td>${formData.travel.firstEntryCountry}</td></tr>
-            <tr><th>入境日期</th><td>${formData.travel.arrivalDate}</td><th>出境日期</th><td>${formData.travel.departureDate}</td></tr>
-            <tr><th>停留天数</th><td>${formData.travel.intendedStay}</td><th>旅行目的</th><td>${formData.travel.tripPurpose.join(', ')}</td></tr>
+            <tr><th>签证申请国</th><td>${step3.visaApplicationCountry}</td><th>首入国</th><td>${step3.firstEntry}</td></tr>
+            <tr><th>入境日期</th><td>${step3.arrivalDate}</td><th>离境日期</th><td>${step3.departureDate}</td></tr>
+            <tr><th>停留天数</th><td>${step3.stayDuration}</td><th>入境次数</th><td>${step3.entryType}</td></tr>
+            <tr><th>目的地</th><td colspan="3">${step3.destinations.join(', ')}</td></tr>
+            <tr><th>旅行目的</th><td colspan="3">${step3.tripPurpose.join(', ')}</td></tr>
           </table>
         </div>
 
         <div class="section">
-          <h2>四、邀请/住宿信息</h2>
-          ${formData.invitation.hasInviter === 'yes' ? `
+          <div class="section-title">四、邀请/住宿信息</div>
           <table>
-            <tr><th>邀请人</th><td>${formData.invitation.inviterName}</td><th>关系</th><td>${formData.invitation.inviterRelationship}</td></tr>
-            <tr><th>电话</th><td>${formData.invitation.inviterPhone}</td><th>邮箱</th><td>${formData.invitation.inviterEmail}</td></tr>
-            <tr><th>地址</th><td colspan="3">${formData.invitation.inviterAddress}</td></tr>
+            ${step4.hasInviter === 'no' ? `
+            <tr><th>酒店名称</th><td>${step4.hotelName}</td></tr>
+            <tr><th>酒店地址</th><td>${step4.hotelAddress}</td></tr>
+            ` : step4.hasInviter === 'personal' ? `
+            <tr><th>邀请人</th><td>${step4.inviterName}</td></tr>
+            <tr><th>邀请人地址</th><td>${step4.inviterAddress}</td></tr>
+            ` : `
+            <tr><th>公司名称</th><td>${step4.orgName}</td></tr>
+            <tr><th>公司地址</th><td>${step4.orgAddress}</td></tr>
+            `}
           </table>
-          ` : `
-          <table>
-            <tr><th>酒店名称</th><td>${formData.invitation.hotelName}</td></tr>
-            <tr><th>酒店地址</th><td>${formData.invitation.hotelAddress}</td></tr>
-            <tr><th>酒店电话</th><td>${formData.invitation.hotelPhone}</td></tr>
-          </table>
-          `}
         </div>
 
         <div class="section">
-          <h2>五、费用信息</h2>
+          <div class="section-title">五、费用信息</div>
           <table>
-            <tr><th>费用承担</th><td>${formData.funding.fundingSource === 'applicant' ? '本人支付' : '赞助人支付'}</td></tr>
-            ${formData.funding.fundingSource === 'sponsor' ? `
-            <tr><th>赞助人</th><td>${formData.funding.sponsorName}</td><th>关系</th><td>${formData.funding.sponsorRelationship}</td></tr>
-            ` : ''}
+            <tr><th>费用承担</th><td>${step5.fundingSource === 'applicant' ? '本人支付' : '赞助人支付'}</td></tr>
           </table>
         </div>
       </body>
       </html>
     `;
 
-    // 使用HTML MIME方式生成Word
     const blob = new Blob([content], { type: 'application/msword;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
@@ -737,85 +791,87 @@ function PreviewStep() {
   };
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-xl font-bold text-morandi-deep mb-4">
-        <span className="inline-block w-8 h-8 bg-morandi-ocean/10 text-morandi-ocean rounded-lg text-center mr-2">6</span>
-        预览导出
+    <div className="space-y-4">
+      <h2 className="text-lg font-bold text-morandi-deep mb-4 flex items-center">
+        <span className="inline-flex items-center justify-center w-7 h-7 bg-morandi-ocean/10 text-morandi-ocean rounded-lg text-sm mr-2">06</span>
+        预览与导出
       </h2>
 
       <div className="bg-white border border-morandi-mist/30 rounded-xl p-6 max-h-96 overflow-y-auto">
-        <h3 className="font-bold text-lg text-morandi-deep mb-4">申请表预览</h3>
+        <h3 className="font-bold text-morandi-deep mb-3 text-sm">填写信息预览</h3>
+        <p className="text-xs text-morandi-mist mb-4">请核对以下信息，确认无误后导出申请表</p>
         
-        <div className="space-y-4">
+        <div className="space-y-3 text-xs">
           <div>
-            <h4 className="font-medium text-morandi-deep mb-2">一、个人信息</h4>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <p><span className="text-morandi-mist">姓:</span> {formData.personal.surname}</p>
-              <p><span className="text-morandi-mist">名:</span> {formData.personal.givenName}</p>
-              <p><span className="text-morandi-mist">出生日期:</span> {formData.personal.birthDate}</p>
-              <p><span className="text-morandi-mist">出生地:</span> {formData.personal.birthPlace}</p>
-              <p><span className="text-morandi-mist">国籍:</span> {formData.personal.nationality}</p>
-              <p><span className="text-morandi-mist">性别:</span> {formData.personal.gender === 'male' ? '男' : '女'}</p>
-              <p><span className="text-morandi-mist">婚姻状况:</span> {formData.personal.maritalStatus}</p>
-              <p><span className="text-morandi-mist">身份证号:</span> {formData.personal.idCard}</p>
+            <h4 className="font-medium text-morandi-deep mb-1">一、个人信息</h4>
+            <div className="grid grid-cols-2 gap-1 text-morandi-mist">
+              <p>姓: {step1.surname}</p>
+              <p>名: {step1.givenName}</p>
+              <p>出生日期: {step1.birthDate}</p>
+              <p>出生地: {step1.birthPlace}</p>
+              <p>国籍: {step1.nationality}</p>
+              <p>性别: {step1.gender === 'male' ? '男' : '女'}</p>
             </div>
           </div>
 
           <div>
-            <h4 className="font-medium text-morandi-deep mb-2">二、护照信息</h4>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <p><span className="text-morandi-mist">护照号码:</span> {formData.passport.passportNumber}</p>
-              <p><span className="text-morandi-mist">签发日期:</span> {formData.passport.passportIssueDate}</p>
-              <p><span className="text-morandi-mist">到期日期:</span> {formData.passport.passportExpiryDate}</p>
-              <p><span className="text-morandi-mist">签发机关:</span> {formData.passport.passportIssueAuthority}</p>
+            <h4 className="font-medium text-morandi-deep mb-1">二、证件信息</h4>
+            <div className="grid grid-cols-2 gap-1 text-morandi-mist">
+              <p>护照号码: {step2.passportNumber}</p>
+              <p>有效期至: {step2.passportExpiry}</p>
             </div>
           </div>
 
           <div>
-            <h4 className="font-medium text-morandi-deep mb-2">三、行程信息</h4>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <p><span className="text-morandi-mist">主要目的地:</span> {formData.travel.mainDestination}</p>
-              <p><span className="text-morandi-mist">首入国家:</span> {formData.travel.firstEntryCountry}</p>
-              <p><span className="text-morandi-mist">入境日期:</span> {formData.travel.arrivalDate}</p>
-              <p><span className="text-morandi-mist">出境日期:</span> {formData.travel.departureDate}</p>
-              <p><span className="text-morandi-mist">停留天数:</span> {formData.travel.intendedStay}</p>
-              <p><span className="text-morandi-mist">旅行目的:</span> {formData.travel.tripPurpose.join(', ')}</p>
+            <h4 className="font-medium text-morandi-deep mb-1">三、行程信息</h4>
+            <div className="grid grid-cols-2 gap-1 text-morandi-mist">
+              <p>申请国: {step3.visaApplicationCountry}</p>
+              <p>首入国: {step3.firstEntry}</p>
+              <p>入境日期: {step3.arrivalDate}</p>
+              <p>离境日期: {step3.departureDate}</p>
             </div>
           </div>
 
           <div>
-            <h4 className="font-medium text-morandi-deep mb-2">四、邀请/住宿信息</h4>
-            {formData.invitation.hasInviter === 'yes' ? (
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <p><span className="text-morandi-mist">邀请人:</span> {formData.invitation.inviterName}</p>
-                <p><span className="text-morandi-mist">关系:</span> {formData.invitation.inviterRelationship}</p>
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-2 text-sm">
-                <p><span className="text-morandi-mist">酒店:</span> {formData.invitation.hotelName}</p>
-                <p><span className="text-morandi-mist">地址:</span> {formData.invitation.hotelAddress}</p>
-              </div>
-            )}
+            <h4 className="font-medium text-morandi-deep mb-1">四、邀请/住宿</h4>
+            <div className="grid grid-cols-2 gap-1 text-morandi-mist">
+              {step4.hasInviter === 'no' ? (
+                <>
+                  <p>酒店: {step4.hotelName}</p>
+                  <p>地址: {step4.hotelAddress}</p>
+                </>
+              ) : step4.hasInviter === 'personal' ? (
+                <>
+                  <p>邀请人: {step4.inviterName}</p>
+                  <p>电话: {step4.inviterPhone}</p>
+                </>
+              ) : (
+                <>
+                  <p>公司: {step4.orgName}</p>
+                  <p>联系人: {step4.orgContactName}</p>
+                </>
+              )}
+            </div>
           </div>
 
           <div>
-            <h4 className="font-medium text-morandi-deep mb-2">五、费用信息</h4>
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <p><span className="text-morandi-mist">费用承担:</span> {formData.funding.fundingSource === 'applicant' ? '本人支付' : '赞助人支付'}</p>
+            <h4 className="font-medium text-morandi-deep mb-1">五、费用信息</h4>
+            <div className="text-morandi-mist">
+              <p>费用承担: {step5.fundingSource === 'applicant' ? '本人支付' : '赞助人支付'}</p>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="flex justify-center">
+      <div className="flex justify-center mt-6">
         <button
           onClick={handleExport}
           className="px-8 py-3 bg-gradient-to-r from-morandi-ocean to-morandi-blush text-white rounded-xl font-medium hover:shadow-lg hover:scale-[1.02] transition-all flex items-center gap-2"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
           </svg>
-          导出Word文档
+          导出Word申请表
         </button>
       </div>
     </div>
@@ -824,16 +880,16 @@ function PreviewStep() {
 
 // 主页面组件
 export default function SchengenVisaPage() {
-  const { currentStep, nextStep, prevStep } = useVisaFormStore();
+  const { currentStep, nextStep, prevStep } = useSchengenVisaStore();
   
   const renderStep = () => {
     switch (currentStep) {
-      case 1: return <PersonalInfoStep />;
-      case 2: return <PassportInfoStep />;
-      case 3: return <TravelInfoStep />;
-      case 4: return <InvitationInfoStep />;
-      case 5: return <FundingInfoStep />;
-      case 6: return <PreviewStep />;
+      case 1: return <Step1Personal />;
+      case 2: return <Step2Passport />;
+      case 3: return <Step3Travel />;
+      case 4: return <Step4Invitation />;
+      case 5: return <Step5Funding />;
+      case 6: return <Step6Preview />;
       default: return null;
     }
   };
@@ -842,17 +898,17 @@ export default function SchengenVisaPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-morandi-cream to-morandi-blush">
       <Navbar />
       
-      <main className="container mx-auto px-4 py-8 pt-24">
+      <main className="container mx-auto px-4 py-6 pt-24">
         {/* 页面标题 */}
-        <div className="bg-white rounded-3xl shadow-lg py-6 px-8 mb-6">
+        <div className="bg-white rounded-2xl shadow-lg py-4 px-6 mb-4">
           <div className="text-center">
-            <h1 className="text-2xl font-bold text-morandi-deep">申根签证申请表</h1>
-            <p className="text-morandi-mist text-sm mt-1">智能向导填写，一键生成标准申请表</p>
+            <h1 className="text-xl font-bold text-morandi-deep">申根签证填表助手</h1>
+            <p className="text-morandi-mist text-xs mt-1">智能向导填写，一键生成标准申请表</p>
           </div>
         </div>
         
         {/* 主卡片 */}
-        <div className="bg-white/80 backdrop-blur-sm rounded-3xl shadow-xl p-6 lg:p-8">
+        <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-4 lg:p-6">
           <StepIndicator />
           
           <AnimatePresence mode="wait">
@@ -861,7 +917,7 @@ export default function SchengenVisaPage() {
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               exit={{ opacity: 0, x: -20 }}
-              transition={{ duration: 0.3 }}
+              transition={{ duration: 0.2 }}
             >
               {renderStep()}
             </motion.div>
@@ -869,30 +925,24 @@ export default function SchengenVisaPage() {
           
           {/* 导航按钮 */}
           {currentStep < 6 && (
-            <div className="flex justify-between mt-8 pt-6 border-t border-morandi-mist/20">
+            <div className="flex justify-between mt-6 pt-4 border-t border-morandi-mist/20">
               <button
                 onClick={prevStep}
                 disabled={currentStep === 1}
-                className={`px-6 py-3 rounded-xl font-medium transition-all ${
+                className={`px-4 py-2 rounded-xl font-medium text-sm transition-all ${
                   currentStep === 1
                     ? 'bg-morandi-mist/20 text-morandi-mist cursor-not-allowed'
                     : 'bg-morandi-mist/10 text-morandi-deep hover:bg-morandi-mist/20'
                 }`}
               >
-                <svg className="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                </svg>
-                上一步
+                ← 上一步
               </button>
               
               <button
                 onClick={nextStep}
-                className="px-8 py-3 bg-gradient-to-r from-morandi-ocean to-morandi-blush text-white rounded-xl font-medium hover:shadow-lg hover:scale-[1.02] transition-all"
+                className="px-6 py-2 bg-gradient-to-r from-morandi-ocean to-morandi-blush text-white rounded-xl font-medium text-sm hover:shadow-lg transition-all"
               >
-                下一步
-                <svg className="w-5 h-5 inline-block ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                </svg>
+                下一步 →
               </button>
             </div>
           )}

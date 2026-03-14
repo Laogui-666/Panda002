@@ -6,7 +6,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import Link from 'next/link';
 
-// 签证服务配置
+// 申请表助手配置
 const visaServices = [
   {
     id: 'schengen',
@@ -70,7 +70,7 @@ export default function VisaServicesPage() {
               transition={{ duration: 0.5 }}
             >
               <h1 className="text-3xl font-bold text-morandi-deep mb-3">
-                全球签证申请助手
+                全球申请表助手
               </h1>
               <p className="text-morandi-mist text-lg">
                 专业、快捷的签证办理指引 · 智能填写申请表
