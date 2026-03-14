@@ -622,7 +622,7 @@ function FundingInfoStep() {
                 <input
                   type="checkbox"
                   checked={f.sponsorGuaranteeLetter}
-                  onChange={(e) => updateFunding({ sponsorGuaranteeLetter: e.target.value === true })}
+                  onChange={(e) => updateFunding({ sponsorGuaranteeLetter: e.target.checked })}
                   className="w-4 h-4 text-morandi-ocean rounded"
                 />
                 <span>赞助信</span>
