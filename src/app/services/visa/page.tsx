@@ -1,4 +1,3 @@
-import React from 'react';
 "use client";
 
 import { motion } from 'framer-motion';
@@ -116,7 +115,7 @@ export default function VisaServicesPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-morandi-cream to-morandi-blush">
       <Navbar />
       
-<main className="container mx-auto px-4 py-8 pt-24">
+      <main className="container mx-auto px-4 py-8 pt-24">
         {/* 页面标题 */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
