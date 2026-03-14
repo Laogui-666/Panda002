@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
@@ -14,9 +14,47 @@ import {
   paymentMeansOptions 
 } from './types';
 
-// 步骤指示器
+// 获取北京时间日期字符串
+const getBeijingDate = (): Date => {
+  return new Date(new Date().toLocaleString('en-US', { timeZone: 'Asia/Shanghai' }));
+};
+
+const getBeijingDateString = (): string => {
+  const bd = getBeijingDate();
+  return bd.toISOString().split('T')[0];
+};
+
+// 日期验证函数
+const validateDate = (dateStr: string, validation: 'past' | 'future' | 'after', compareDate?: string): { valid: boolean; message: string } => {
+  if (!dateStr) return { valid: true, message: '' };
+  
+  const beijingNow = getBeijingDate();
+  const inputDate = new Date(dateStr);
+  const compare = compareDate ? new Date(compareDate) : beijingNow;
+  
+  if (validation === 'past') {
+    // 不能晚于当天（必须是今天或之前）
+    if (inputDate > beijingNow) {
+      return { valid: false, message: '日期不能晚于今天（北京时间）' };
+    }
+  } else if (validation === 'future') {
+    // 不能早于当天（必须是今天或之后）
+    if (inputDate < beijingNow) {
+      return { valid: false, message: '日期不能早于今天（北京时间）' };
+    }
+  } else if (validation === 'after' && compareDate) {
+    // 不能早于比较日期
+    if (inputDate < compare) {
+      return { valid: false, message: `日期不能早于${compareDate}` };
+    }
+  }
+  
+  return { valid: true, message: '' };
+};
+
+// 步骤指示器 - 可点击跳转
 function StepIndicator() {
-  const { currentStep, totalSteps } = useSchengenVisaStore();
+  const { currentStep, totalSteps, completedSteps, setStep } = useSchengenVisaStore();
   
   const steps = [
     { num: 1, label: '个人信息' },
@@ -27,44 +65,81 @@ function StepIndicator() {
     { num: 6, label: '预览导出' },
   ];
 
+  const handleStepClick = (stepNum: number) => {
+    // 只有当前步骤和已完成步骤可以点击
+    if (stepNum === currentStep || completedSteps.includes(stepNum)) {
+      setStep(stepNum);
+    }
+  };
+
   return (
     <div className="mb-6">
-      <div className="relative mb-3">
-        <div className="h-1.5 bg-morandi-mist/20 rounded-full overflow-hidden">
+      {/* 导航栏风格 */}
+      <div className="bg-[#1e293b] p-2 rounded-xl">
+        <div className="flex items-center gap-1">
+          {steps.map((step, index) => {
+            const isCompleted = completedSteps.includes(step.num);
+            const isCurrent = step.num === currentStep;
+            const isClickable = isCompleted || isCurrent;
+            
+            return (
+              <React.Fragment key={step.num}>
+                <motion.div
+                  className={`flex-1 relative`}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.05 }}
+                >
+                  <motion.button
+                    onClick={() => handleStepClick(step.num)}
+                    disabled={!isClickable}
+                    className={`
+                      w-full px-2 py-3 rounded-lg text-xs font-medium transition-all duration-200
+                      ${isClickable 
+                        ? 'cursor-pointer hover:bg-white/10' 
+                        : 'cursor-not-allowed opacity-40'
+                      }
+                      ${isCurrent 
+                        ? 'bg-gradient-to-r from-sky-400 to-sky-500 text-white shadow-lg shadow-sky-500/30' 
+                        : isCompleted
+                          ? 'text-slate-300 hover:text-white'
+                          : 'text-slate-500'
+                      }
+                    `}
+                    whileHover={isClickable ? { scale: 1.02 } : {}}
+                    whileTap={isClickable ? { scale: 0.98 } : {}}
+                  >
+                    <div className="flex items-center justify-center gap-1.5">
+                      {isCompleted && !isCurrent ? (
+                        <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                      ) : (
+                        <span className={isCurrent ? 'text-white' : ''}>{step.num}</span>
+                      )}
+                      <span className="hidden sm:inline">{step.label}</span>
+                    </div>
+                  </motion.button>
+                </motion.div>
+                {index < steps.length - 1 && (
+                  <div className={`w-2 h-0.5 rounded ${step.num < currentStep ? 'bg-sky-500' : 'bg-slate-600'}`} />
+                )}
+              </React.Fragment>
+            );
+          })}
+        </div>
+      </div>
+      
+      {/* 进度条 */}
+      <div className="mt-3">
+        <div className="h-1.5 bg-slate-700/50 rounded-full overflow-hidden">
           <motion.div 
-            className="h-full bg-gradient-to-r from-morandi-ocean to-morandi-blush"
+            className="h-full bg-gradient-to-r from-sky-400 to-sky-500"
             initial={{ width: 0 }}
             animate={{ width: `${((currentStep - 1) / (totalSteps - 1)) * 100}%` }}
             transition={{ duration: 0.3 }}
           />
         </div>
-      </div>
-      
-      <div className="flex justify-between items-center">
-        {steps.map((step) => (
-          <div 
-            key={step.num}
-            className={`flex flex-col items-center flex-1 ${
-              step.num === currentStep 
-                ? 'text-morandi-ocean' 
-                : step.num < currentStep 
-                  ? 'text-morandi-deep' 
-                  : 'text-morandi-mist/50'
-            }`}
-          >
-            <div className={`
-              w-7 h-7 rounded-full flex items-center justify-center text-xs font-medium mb-1
-              ${step.num === currentStep 
-                ? 'bg-morandi-ocean text-white' 
-                : step.num < currentStep 
-                  ? 'bg-morandi-ocean/20 text-morandi-deep' 
-                  : 'bg-morandi-mist/20 text-morandi-mist/50'}
-            `}>
-              {step.num < currentStep ? '✓' : step.num}
-            </div>
-            <span className="text-[10px] hidden sm:block">{step.label}</span>
-          </div>
-        ))}
       </div>
     </div>
   );
@@ -74,13 +149,24 @@ function StepIndicator() {
 function Step1Personal() {
   const { formData, updateStep1 } = useSchengenVisaStore();
   const p = formData.step1;
+  const [errors, setErrors] = useState<Record<string, string>>({});
   
   const isMinor = p.birthDate ? (() => {
     const birth = new Date(p.birthDate);
-    const today = new Date();
-    const age = today.getFullYear() - birth.getFullYear();
+    const today = getBeijingDate();
+    const age =today.getFullYear() - birth.getFullYear();
     return age < 18;
   })() : false;
+
+  const handleDateChange = (field: string, value: string) => {
+    let error = '';
+    if (field === 'birthDate') {
+      const result = validateDate(value, 'past');
+      if (!result.valid) error = result.message;
+    }
+    setErrors(prev => ({ ...prev, [field]: error }));
+    updateStep1({ [field]: value });
+  };
 
   return (
     <div className="space-y-4">
@@ -93,7 +179,15 @@ function Step1Personal() {
         <Input label="姓 (Surname) *" value={p.surname} onChange={(e) => updateStep1({ surname: e.target.value })} placeholder="请输入姓" />
         <Input label="出生时姓氏" value={p.birthSurname} onChange={(e) => updateStep1({ birthSurname: e.target.value })} placeholder="如有曾用名请填写" />
         <Input label="名 (Given Name) *" value={p.givenName} onChange={(e) => updateStep1({ givenName: e.target.value })} placeholder="请输入名" />
-        <Input label="出生日期 *" type="date" value={p.birthDate} onChange={(e) => updateStep1({ birthDate: e.target.value })} />
+        <div>
+          <Input 
+            label="出生日期 *" 
+            type="date" 
+            value={p.birthDate} 
+            onChange={(e) => handleDateChange('birthDate', e.target.value)} 
+          />
+          {errors.birthDate && <p className="text-red-500 text-xs mt-1">{errors.birthDate}</p>}
+        </div>
         <Input label="出生地 *" value={p.birthPlace} onChange={(e) => updateStep1({ birthPlace: e.target.value })} placeholder="例如：四川成都" />
         <Input label="现国籍 *" value={p.nationality} onChange={(e) => updateStep1({ nationality: e.target.value })} placeholder="例如：China" />
         <Input label="出生国家 *" value={p.birthCountry} onChange={(e) => updateStep1({ birthCountry: e.target.value })} placeholder="例如：China" />
@@ -149,6 +243,25 @@ function Step1Personal() {
 function Step2Passport() {
   const { formData, updateStep2 } = useSchengenVisaStore();
   const p = formData.step2;
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  const handleDateChange = (field: string, value: string) => {
+    let error = '';
+    if (field === 'passportIssueDate') {
+      const result = validateDate(value, 'past');
+      if (!result.valid) error = result.message;
+    } else if (field === 'passportExpiry') {
+      const result = validateDate(value, 'future');
+      if (!result.valid) error = result.message;
+      // 还需要检查是否早于签发日期
+      if (p.passportIssueDate && value) {
+        const compareResult = validateDate(value, 'after', p.passportIssueDate);
+        if (!compareResult.valid) error = compareResult.message;
+      }
+    }
+    setErrors(prev => ({ ...prev, [field]: error }));
+    updateStep2({ [field]: value });
+  };
 
   return (
     <div className="space-y-4">
@@ -176,8 +289,24 @@ function Step2Passport() {
           <Input label="请说明" value={p.passportTypeOther} onChange={(e) => updateStep2({ passportTypeOther: e.target.value })} placeholder="请具体说明" />
         )}
         <Input label="护照号码 *" value={p.passportNumber} onChange={(e) => updateStep2({ passportNumber: e.target.value })} placeholder="请输入护照号码" />
-        <Input label="护照签发日期 *" type="date" value={p.passportIssueDate} onChange={(e) => updateStep2({ passportIssueDate: e.target.value })} />
-        <Input label="有效期至 *" type="date" value={p.passportExpiry} onChange={(e) => updateStep2({ passportExpiry: e.target.value })} />
+        <div>
+          <Input 
+            label="护照签发日期 *" 
+            type="date" 
+            value={p.passportIssueDate} 
+            onChange={(e) => handleDateChange('passportIssueDate', e.target.value)} 
+          />
+          {errors.passportIssueDate && <p className="text-red-500 text-xs mt-1">{errors.passportIssueDate}</p>}
+        </div>
+        <div>
+          <Input 
+            label="有效期至 *" 
+            type="date" 
+            value={p.passportExpiry} 
+            onChange={(e) => handleDateChange('passportExpiry', e.target.value)} 
+          />
+          {errors.passportExpiry && <p className="text-red-500 text-xs mt-1">{errors.passportExpiry}</p>}
+        </div>
         <Input label="签发机关 *" value={p.passportIssuer} onChange={(e) => updateStep2({ passportIssuer: e.target.value })} placeholder="例如：China" />
         <div className="md:col-span-2">
           <Input label="申请人住址 *" value={p.address} onChange={(e) => updateStep2({ address: e.target.value })} placeholder="请输入详细住址" />
@@ -202,91 +331,84 @@ function Step2Passport() {
             <span className="text-sm">是 (Yes)</span>
           </label>
         </div>
-      </div>
-
-      {p.residenceAbroad && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-          <Select 
-            label="居留证种类" 
-            value={p.residencePermitType} 
-            onChange={(v) => updateStep2({ residencePermitType: v })} 
-            options={[
-              { value: '', label: '请选择' },
-              { value: 'permanent', label: '永久居留 (Permanent)' },
-              { value: 'temporary', label: '临时居留 (Temporary)' },
-              { value: 'work', label: '工作居留 (Work Permit)' },
-              { value: 'student', label: '学习居留 (Student Visa)' },
-              { value: 'other', label: '其他 (Other)' },
-            ]} 
-          />
-          <Input label="居留证有效期" type="date" value={p.residencePermitExpiry} onChange={(e) => updateStep2({ residencePermitExpiry: e.target.value })} />
-        </div>
-      )}
-
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-        <Select 
-          label="现职业 *" 
-          value={p.occupation} 
-          onChange={(v) => updateStep2({ occupation: v })} 
-          options={[{ value: '', label: '请选择' }, ...occupationOptions]} 
-        />
-        {p.occupation === 'other' && (
-          <Input label="请说明职业" value={p.occupationOther} onChange={(e) => updateStep2({ occupationOther: e.target.value })} placeholder="请具体说明" />
+        
+        {p.residenceAbroad && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+            <Select 
+              label="居留许可种类" 
+              value={p.residencePermitType} 
+              onChange={(v) => updateStep2({ residencePermitType: v })} 
+              options={[
+                { value: '', label: '请选择' },
+                { value: 'student', label: '学生居留' },
+                { value: 'work', label: '工作居留' },
+                { value: 'long-term', label: '长期居留' },
+                { value: 'other', label: '其他' },
+              ]} 
+            />
+            <Input label="有效期至" type="date" value={p.residencePermitExpiry} onChange={(e) => updateStep2({ residencePermitExpiry: e.target.value })} />
+          </div>
         )}
       </div>
 
-      {/* 工作单位/学校信息 */}
-      {(p.occupation === 'employed' || p.occupation === 'self-employed' || p.occupation === 'student') && (
-        <div className="mt-6 p-4 bg-morandi-ocean/5 rounded-xl border border-morandi-ocean/20">
-          <h3 className="font-medium text-morandi-deep mb-4 text-sm">
-            {p.occupation === 'student' ? '学校信息' : '工作单位信息'}
-          </h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="md:col-span-2">
-              <Input 
-                label={p.occupation === 'student' ? '学校名称 *' : '工作单位名称 *'} 
-                value={p.employerName} 
-                onChange={(e) => updateStep2({ employerName: e.target.value })} 
-                placeholder="请输入工作单位或学校名称" 
-              />
-            </div>
-            <div className="md:col-span-2">
-              <Input label="地址 *" value={p.employerAddress} onChange={(e) => updateStep2({ employerAddress: e.target.value })} placeholder="请输入地址" />
-            </div>
-            <Input label="电话 *" value={p.employerPhone} onChange={(e) => updateStep2({ employerPhone: e.target.value })} placeholder="请输入电话号码" />
-            {p.occupation === 'employed' && (
-              <Input label="当前职位" value={p.currentPosition} onChange={(e) => updateStep2({ currentPosition: e.target.value })} placeholder="请输入您的职位" />
-            )}
+      <div className="p-4 bg-gray-50 rounded-xl">
+        <Select 
+          label="职业 * (Occupation)" 
+          value={p.occupation} 
+          onChange={(v) => updateStep2({ occupation: v })} 
+          options={occupationOptions} 
+        />
+        {p.occupation === 'other' && (
+          <div className="mt-3">
+            <Input label="请说明" value={p.occupationOther} onChange={(e) => updateStep2({ occupationOther: e.target.value })} placeholder="请具体说明" />
           </div>
-        </div>
-      )}
+        )}
+
+        {(p.occupation === 'employed' || p.occupation === 'self-employed') && (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+            <Input label="工作单位/学校名称 *" value={p.employerName} onChange={(e) => updateStep2({ employerName: e.target.value })} placeholder="请输入单位名称" />
+            <Input label="现任职位" value={p.currentPosition} onChange={(e) => updateStep2({ currentPosition: e.target.value })} placeholder="请输入职位" />
+            <div className="md:col-span-2">
+              <Input label="单位地址" value={p.employerAddress} onChange={(e) => updateStep2({ employerAddress: e.target.value })} placeholder="请输入单位地址" />
+            </div>
+            <Input label="单位电话" value={p.employerPhone} onChange={(e) => updateStep2({ employerPhone: e.target.value })} placeholder="请输入单位电话" />
+          </div>
+        )}
+      </div>
     </div>
   );
 }
 
 // Step 3: 行程信息
 function Step3Travel() {
-  const { formData, updateStep3, addCompanion, removeCompanion } = useSchengenVisaStore();
+  const { formData, updateStep3 } = useSchengenVisaStore();
   const t = formData.step3;
   const [showDestinationDropdown, setShowDestinationDropdown] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // 计算停留天数
+  // 点击外部关闭菜单
   useEffect(() => {
-    if (t.arrivalDate && t.departureDate) {
-      const arrival = new Date(t.arrivalDate);
-      const departure = new Date(t.departureDate);
-      const diff = Math.ceil((departure.getTime() - arrival.getTime()) / (1000 * 60 * 60 * 24));
-      if (diff > 0) {
-        updateStep3({ stayDuration: diff.toString() });
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDestinationDropdown(false);
       }
-    }
-  }, [t.arrivalDate, t.departureDate]);
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   const toggleDestination = (country: string) => {
     const newDestinations = t.destinations.includes(country)
-      ? t.destinations.filter(d => d !== country)
+      ? t.destinations.filter(c => c !== country)
       : [...t.destinations, country];
     updateStep3({ destinations: newDestinations });
+    
+    // 如果首入国不在新目的地列表中，清空首入国
+    if (newDestinations.length > 0 && !newDestinations.includes(t.firstEntry)) {
+      updateStep3({ firstEntry: newDestinations[0] });
+    }
   };
 
   const handlePurposeChange = (purpose: string) => {
@@ -296,9 +418,45 @@ function Step3Travel() {
     updateStep3({ tripPurpose: newPurposes });
   };
 
+  const handleDateChange = (field: string, value: string) => {
+    let error = '';
+    if (field === 'arrivalDate') {
+      const result = validateDate(value, 'future');
+      if (!result.valid) error = result.message;
+    } else if (field === 'departureDate') {
+      if (t.arrivalDate) {
+        const result = validateDate(value, 'after', t.arrivalDate);
+        if (!result.valid) error = '离境日期不能早于入境日期';
+      }
+    }
+    setErrors(prev => ({ ...prev, [field]: error }));
+    updateStep3({ [field]: value });
+    
+    // 自动计算逗留天数
+    if (t.arrivalDate && t.departureDate) {
+      const arrival = new Date(t.arrivalDate);
+      const departure = new Date(t.departureDate);
+      const days = Math.ceil((departure.getTime() - arrival.getTime()) / (1000 * 60 * 60 * 24));
+      if (days > 0) {
+        updateStep3({ stayDuration: days.toString() });
+      }
+    }
+  };
+
   const handleAddCompanion = () => {
+    const { addCompanion } = useSchengenVisaStore.getState();
     addCompanion({ name: '', relationship: '', nationality: '' });
   };
+
+  const removeCompanion = (index: number) => {
+    const { removeCompanion } = useSchengenVisaStore.getState();
+    removeCompanion(index);
+  };
+
+  // 首入 国选项 - 只能从已选目的地中选择
+  const firstEntryOptions = t.destinations.length > 0 
+    ? [{ value: '', label: '请选择' }, ...t.destinations.map(c => ({ value: c, label: c }))]
+    : [{ value: '', label: '请先选择目的地' }];
 
   return (
     <div className="space-y-4">
@@ -315,19 +473,34 @@ function Step3Travel() {
           options={[{ value: '', label: '请选择' }, ...schengenCountries.map(c => ({ value: c, label: c }))]} 
         />
         
-        {/* 申根目的地多选 */}
-        <div className="relative">
+        {/* 申根目的地多选 - 带外部点击关闭 */}
+        <div className="relative" ref={dropdownRef}>
           <label className="block text-sm font-medium text-morandi-deep mb-2">预计前往申根地区 *</label>
           <div 
-            className="w-full px-4 py-3 rounded-2xl border border-morandi-mist/30 bg-white cursor-pointer hover:border-morandi-ocean/50"
+            className="w-full px-4 py-3 rounded-2xl border border-morandi-mist/30 bg-white cursor-pointer hover:border-morandi-ocean/50 transition-colors"
             onClick={() => setShowDestinationDropdown(!showDestinationDropdown)}
           >
-            {t.destinations.length > 0 ? t.destinations.join(', ') : '点击选择申根国家（可多选）'}
+            {t.destinations.length > 0 ? (
+              <div className="flex flex-wrap gap-1">
+                {t.destinations.map(c => (
+                  <span key={c} className="inline-block px-2 py-0.5 bg-morandi-ocean/10 text-morandi-ocean text-xs rounded-full">
+                    {c}
+                  </span>
+                ))}
+              </div>
+            ) : (
+              <span className="text-morandi-mist">点击选择申根国家（可多选）</span>
+            )}
           </div>
           {showDestinationDropdown && (
-            <div className="absolute z-10 w-full mt-1 bg-white border border-morandi-mist/30 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+            <div className="absolute z-20 w-full mt-1 bg-white border border-morandi-mist/30 rounded-xl shadow-lg max-h-60 overflow-y-auto">
               {schengenCountries.map(country => (
-                <label key={country} className="flex items-center gap-2 px-4 py-2 hover:bg-morandi-ocean/5 cursor-pointer">
+                <label 
+                  key={country} 
+                  className={`flex items-center gap-2 px-4 py-2.5 hover:bg-morandi-ocean/5 cursor-pointer transition-colors ${
+                    t.destinations.includes(country) ? 'bg-morandi-ocean/5' : ''
+                  }`}
+                >
                   <input 
                     type="checkbox" 
                     checked={t.destinations.includes(country)} 
@@ -341,12 +514,17 @@ function Step3Travel() {
           )}
         </div>
         
-        <Select 
-          label="申根首入国 *" 
-          value={t.firstEntry} 
-          onChange={(v) => updateStep3({ firstEntry: v })} 
-          options={[{ value: '', label: '请选择' }, ...schengenCountries.map(c => ({ value: c, label: c }))]} 
-        />
+        {/* 首入 国限制 - 只能从已选目的地中选择 */}
+        <div>
+          <Select 
+            label="申根首入国 *" 
+            value={t.firstEntry} 
+            onChange={(v) => updateStep3({ firstEntry: v })} 
+            options={firstEntryOptions}
+            disabled={t.destinations.length === 0}
+          />
+          {t.destinations.length === 0 && <p className="text-red-500 text-xs mt-1">请先选择目的地</p>}
+        </div>
         <Select 
           label="申请入境次数 *" 
           value={t.entryType} 
@@ -358,8 +536,24 @@ function Step3Travel() {
             { value: 'multiple', label: '多次 (Multiple Entries)' },
           ]} 
         />
-        <Input label="预计入境日期 *" type="date" value={t.arrivalDate} onChange={(e) => updateStep3({ arrivalDate: e.target.value })} />
-        <Input label="预计离境日期 *" type="date" value={t.departureDate} onChange={(e) => updateStep3({ departureDate: e.target.value })} />
+        <div>
+          <Input 
+            label="预计入境日期 *" 
+            type="date" 
+            value={t.arrivalDate} 
+            onChange={(e) => handleDateChange('arrivalDate', e.target.value)} 
+          />
+          {errors.arrivalDate && <p className="text-red-500 text-xs mt-1">{errors.arrivalDate}</p>}
+        </div>
+        <div>
+          <Input 
+            label="预计离境日期 *" 
+            type="date" 
+            value={t.departureDate} 
+            onChange={(e) => handleDateChange('departureDate', e.target.value)} 
+          />
+          {errors.departureDate && <p className="text-red-500 text-xs mt-1">{errors.departureDate}</p>}
+        </div>
         <Input label="预计逗留天数" value={t.stayDuration} onChange={(e) => updateStep3({ stayDuration: e.target.value })} placeholder="自动计算" readOnly />
       </div>
 
@@ -427,10 +621,10 @@ function Step3Travel() {
                   newCompanions[index].nationality = e.target.value;
                   updateStep3({ companions: newCompanions });
                 }} />
-                <button onClick={() => removeCompanion(index)} className="text-red-500 text-sm">删除</button>
+                <button onClick={() => removeCompanion(index)} className="text-red-500 text-sm hover:text-red-700 transition-colors">删除</button>
               </div>
             ))}
-            <button onClick={handleAddCompanion} className="text-morandi-ocean text-sm mt-2">+ 添加同行人</button>
+            <button onClick={handleAddCompanion} className="text-morandi-ocean text-sm mt-2 hover:text-morandi-deep transition-colors">+ 添加同行人</button>
           </div>
         )}
       </div>
@@ -586,6 +780,23 @@ function Step5Funding() {
     updateStep5({ sponsorMeans: newMeans });
   };
 
+  // 切换出资来源时自动设置默认选项
+  const handleFundingSourceChange = (source: 'applicant' | 'sponsor') => {
+    if (source === 'applicant') {
+      updateStep5({ 
+        fundingSource: 'applicant',
+        applicantMeans: ['cash', 'creditCard'],
+        sponsorMeans: []
+      });
+    } else {
+      updateStep5({ 
+        fundingSource: 'sponsor',
+        applicantMeans: [],
+        sponsorMeans: ['allExpenses']
+      });
+    }
+  };
+
   return (
     <div className="space-y-4">
       <h2 className="text-lg font-bold text-morandi-deep mb-4 flex items-center">
@@ -597,11 +808,25 @@ function Step5Funding() {
         <label className="block text-sm font-medium text-morandi-deep mb-2">旅费及停留费用由谁支付？ *</label>
         <div className="flex flex-wrap gap-4">
           <label className="flex items-center gap-2 cursor-pointer">
-            <input type="radio" name="fundingSource" value="applicant" checked={f.fundingSource === 'applicant'} onChange={() => updateStep5({ fundingSource: 'applicant' })} className="w-4 h-4 text-morandi-ocean" />
+            <input 
+              type="radio" 
+              name="fundingSource" 
+              value="applicant" 
+              checked={f.fundingSource === 'applicant'} 
+              onChange={() => handleFundingSourceChange('applicant')} 
+              className="w-4 h-4 text-morandi-ocean" 
+            />
             <span className="text-sm">申请人本人支付</span>
           </label>
           <label className="flex items-center gap-2 cursor-pointer">
-            <input type="radio" name="fundingSource" value="sponsor" checked={f.fundingSource === 'sponsor'} onChange={() => updateStep5({ fundingSource: 'sponsor' })} className="w-4 h-4 text-morandi-ocean" />
+            <input 
+              type="radio" 
+              name="fundingSource" 
+              value="sponsor" 
+              checked={f.fundingSource === 'sponsor'} 
+              onChange={() => handleFundingSourceChange('sponsor')} 
+              className="w-4 h-4 text-morandi-ocean" 
+            />
             <span className="text-sm">赞助人/邀请方支付</span>
           </label>
         </div>
@@ -610,7 +835,7 @@ function Step5Funding() {
       {/* 本人支付 */}
       {f.fundingSource === 'applicant' && (
         <div className="mt-4 p-4 bg-morandi-ocean/5 rounded-xl border border-morandi-ocean/20">
-          <h3 className="font-medium text-morandi-deep mb-3 text-sm">本人支付方式</h3>
+          <h3 className="font-medium text-morandi-deep mb-3 text-sm">本人支付方式 (默认勾选)</h3>
           <label className="block text-sm text-morandi-mist mb-2">支付方式 (可多选)</label>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
             {paymentMeansOptions.map(means => (
@@ -667,7 +892,7 @@ function Step5Funding() {
           )}
 
           <div className="mb-3">
-            <label className="block text-sm text-morandi-mist mb-2">支付方式 (可多选)</label>
+            <label className="block text-sm text-morandi-mist mb-2">支付方式 (默认勾选"支付所有开支")</label>
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               <label className={`flex items-center gap-2 p-2 rounded-lg border cursor-pointer transition-all text-xs ${f.sponsorMeans.includes('cash') ? 'border-morandi-ocean bg-morandi-ocean/5' : 'border-morandi-mist/30'}`}>
                 <input type="checkbox" checked={f.sponsorMeans.includes('cash')} onChange={() => handleSponsorMeans('cash')} className="w-3 h-3 text-morandi-ocean rounded" />
@@ -699,7 +924,7 @@ function Step5Funding() {
 
 // Step 6: 预览导出
 function Step6Preview() {
-  const { formData } = useSchengenVisaStore();
+  const { formData, prevStep } = useSchengenVisaStore();
   const { step1, step2, step3, step4, step5 } = formData;
 
   const handleExport = () => {
@@ -792,10 +1017,24 @@ function Step6Preview() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-lg font-bold text-morandi-deep mb-4 flex items-center">
-        <span className="inline-flex items-center justify-center w-7 h-7 bg-morandi-ocean/10 text-morandi-ocean rounded-lg text-sm mr-2">06</span>
-        预览与导出
-      </h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-lg font-bold text-morandi-deep flex items-center">
+          <span className="inline-flex items-center justify-center w-7 h-7 bg-morandi-ocean/10 text-morandi-ocean rounded-lg text-sm mr-2">06</span>
+          预览与导出
+        </h2>
+        {/* 返回按钮 */}
+        <motion.button
+          onClick={prevStep}
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="flex items-center gap-2 px-4 py-2 bg-morandi-mist/10 text-morandi-deep rounded-xl font-medium text-sm hover:bg-morandi-mist/20 transition-colors"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+          返回修改
+        </motion.button>
+      </div>
 
       <div className="bg-white border border-morandi-mist/30 rounded-xl p-6 max-h-96 overflow-y-auto">
         <h3 className="font-bold text-morandi-deep mb-3 text-sm">填写信息预览</h3>
@@ -864,15 +1103,17 @@ function Step6Preview() {
       </div>
 
       <div className="flex justify-center mt-6">
-        <button
+        <motion.button
           onClick={handleExport}
-          className="px-8 py-3 bg-gradient-to-r from-morandi-ocean to-morandi-blush text-white rounded-xl font-medium hover:shadow-lg hover:scale-[1.02] transition-all flex items-center gap-2"
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          className="px-8 py-3 bg-gradient-to-r from-morandi-ocean to-morandi-blush text-white rounded-xl font-medium hover:shadow-lg transition-all flex items-center gap-2"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />
           </svg>
           导出Word申请表
-        </button>
+        </motion.button>
       </div>
     </div>
   );
@@ -926,9 +1167,11 @@ export default function SchengenVisaPage() {
           {/* 导航按钮 */}
           {currentStep < 6 && (
             <div className="flex justify-between mt-6 pt-4 border-t border-morandi-mist/20">
-              <button
+              <motion.button
                 onClick={prevStep}
                 disabled={currentStep === 1}
+                whileHover={currentStep > 1 ? { scale: 1.02 } : {}}
+                whileTap={currentStep > 1 ? { scale: 0.98 } : {}}
                 className={`px-4 py-2 rounded-xl font-medium text-sm transition-all ${
                   currentStep === 1
                     ? 'bg-morandi-mist/20 text-morandi-mist cursor-not-allowed'
@@ -936,14 +1179,16 @@ export default function SchengenVisaPage() {
                 }`}
               >
                 ← 上一步
-              </button>
+              </motion.button>
               
-              <button
+              <motion.button
                 onClick={nextStep}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
                 className="px-6 py-2 bg-gradient-to-r from-morandi-ocean to-morandi-blush text-white rounded-xl font-medium text-sm hover:shadow-lg transition-all"
               >
                 下一步 →
-              </button>
+              </motion.button>
             </div>
           )}
         </div>

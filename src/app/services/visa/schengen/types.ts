@@ -252,11 +252,11 @@ export const initialStep4: Step4Invitation = {
 
 export const initialStep5: Step5Funding = {
   fundingSource: 'applicant',
-  applicantMeans: [],
+  applicantMeans: ['cash', 'creditCard'],
   applicantMeansOther: '',
   sponsorType: 'inviter',
   otherSponsorName: '',
-  sponsorMeans: [],
+  sponsorMeans: ['allExpenses'],
   sponsorMeansOther: '',
 };
 

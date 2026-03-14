@@ -1,5 +1,3 @@
-'use client';
-
 import { create } from 'zustand';
 import { 
   SchengenVisaData, 
@@ -20,11 +18,13 @@ import {
 interface SchengenVisaStore {
   currentStep: number;
   totalSteps: number;
+  completedSteps: number[];
   formData: SchengenVisaData;
   
   setStep: (step: number) => void;
   nextStep: () => void;
   prevStep: () => void;
+  markStepComplete: (step: number) => void;
   updateStep1: (data: Partial<Step1Personal>) => void;
   updateStep2: (data: Partial<Step2Passport>) => void;
   updateStep3: (data: Partial<Step3Travel>) => void;
@@ -38,16 +38,30 @@ interface SchengenVisaStore {
 export const useSchengenVisaStore = create<SchengenVisaStore>((set) => ({
   currentStep: 1,
   totalSteps: 6,
+  completedSteps: [],
   formData: initialSchengenData,
   
   setStep: (step) => set({ currentStep: step }),
   
-  nextStep: () => set((state) => ({
-    currentStep: Math.min(state.currentStep + 1, state.totalSteps)
-  })),
+  nextStep: () => set((state) => {
+    const newStep = Math.min(state.currentStep + 1, state.totalSteps);
+    const completedSteps = state.completedSteps.includes(state.currentStep)
+      ? state.completedSteps
+      : [...state.completedSteps, state.currentStep];
+    return {
+      currentStep: newStep,
+      completedSteps
+    };
+  }),
   
   prevStep: () => set((state) => ({
     currentStep: Math.max(state.currentStep - 1, 1)
+  })),
+  
+  markStepComplete: (step) => set((state) => ({
+    completedSteps: state.completedSteps.includes(step)
+      ? state.completedSteps
+      : [...state.completedSteps, step]
   })),
   
   updateStep1: (data) => set((state) => ({
@@ -107,6 +121,7 @@ export const useSchengenVisaStore = create<SchengenVisaStore>((set) => ({
   
   reset: () => set({
     currentStep: 1,
+    completedSteps: [],
     formData: initialSchengenData
   }),
 }));
