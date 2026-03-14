@@ -131,6 +131,7 @@ export const schengenCountries = [
 
 // 职业选项
 export const occupationOptions = [
+  { value: '', label: '请选择职业' },
   { value: 'student', label: '学生 (Student)' },
   { value: 'employed', label: '在职 (Employed)' },
   { value: 'self-employed', label: '自雇 (Self-employed)' },

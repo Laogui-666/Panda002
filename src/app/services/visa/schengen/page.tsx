@@ -352,17 +352,14 @@ function Step2Passport() {
 
         {/* 学生 - 学校信息 */}
         {p.occupation === 'student' && (
-          <div className="mt-3 p-4 bg-sky-50 rounded-xl border border-sky-200">
-            <h4 className="font-medium text-sky-700 mb-3 text-sm">学校信息</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              <div className="md:col-span-2">
-                <Input label="学校名称 *" value={p.schoolName} onChange={(e) => updateStep2({ schoolName: e.target.value })} placeholder="请输入学校名称" />
-              </div>
-              <div className="md:col-span-2">
-                <Input label="学校地址" value={p.schoolAddress} onChange={(e) => updateStep2({ schoolAddress: e.target.value })} placeholder="请输入学校地址" />
-              </div>
-              <Input label="学校电话" value={p.schoolPhone} onChange={(e) => updateStep2({ schoolPhone: e.target.value })} placeholder="请输入学校电话" />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
+            <div className="md:col-span-2">
+              <Input label="学校名称 *" value={p.schoolName} onChange={(e) => updateStep2({ schoolName: e.target.value })} placeholder="请输入学校名称" />
             </div>
+            <div className="md:col-span-2">
+              <Input label="学校地址" value={p.schoolAddress} onChange={(e) => updateStep2({ schoolAddress: e.target.value })} placeholder="请输入学校地址" />
+            </div>
+            <Input label="学校电话" value={p.schoolPhone} onChange={(e) => updateStep2({ schoolPhone: e.target.value })} placeholder="请输入学校电话" />
           </div>
         )}
       </div>
