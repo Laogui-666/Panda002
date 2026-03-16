@@ -1,7 +1,7 @@
 /**
- * ERP数据库初始化脚本
+ * ERP数据库初始化脚本 (JavaScript版本)
  * 
- * 运行: node src/lib/erp/init-db.js
+ * 运行命令: node src/lib/erp/init-db.js
  */
 
 const { PrismaClient } = require('@prisma/client');
@@ -29,7 +29,22 @@ async function main() {
       },
     });
 
+    const company2 = await prisma.company.upsert({
+      where: { id: 2 },
+      update: {},
+      create: {
+        id: 2,
+        name: '签证宝',
+        shortName: '签证宝',
+        phone: '400-666-6666',
+        email: 'service@qianzhengbao.com',
+        address: '北京市朝阳区建国门外大街1号',
+        status: 'active',
+      },
+    });
+
     console.log(`   公司1: ${company1.name} (ID: ${company1.id})`);
+    console.log(`   公司2: ${company2.name} (ID: ${company2.id})`);
 
     // 2. 创建部门
     console.log('\n2. 创建部门...');
@@ -77,25 +92,23 @@ async function main() {
     // 3. 创建用户
     console.log('\n3. 创建测试用户...');
     
-    const passwordHash = await bcrypt.hash('123456', 10);
-
-    // 超级管理员
+    // 超级管理员 - 密码: 123456
     const superAdmin = await prisma.user.upsert({
       where: { username: 'superadmin' },
       update: {},
       create: {
         username: 'superadmin',
         email: 'superadmin@muhai001.com',
-        passwordHash,
+        passwordHash: await bcrypt.hash('123456', 10),
         name: '超级管理员',
         phone: '13800000000',
         role: 'SUPER_ADMIN',
         status: 'ACTIVE',
       },
     });
-    console.log(`   超级管理员: superadmin / 123456 (ID: ${superAdmin.id})`);
+    console.log(`   超级管理员: superadmin / 123456 (ID: ${superAdmin.id}, Role: ${superAdmin.role})`);
 
-    // 公司负责人
+    // 公司负责人 - 密码: owner123456
     const companyOwner = await prisma.user.upsert({
       where: { username: 'owner1' },
       update: {},
@@ -110,9 +123,9 @@ async function main() {
         status: 'ACTIVE',
       },
     });
-    console.log(`   公司负责人: owner1 / owner123456 (ID: ${companyOwner.id})`);
+    console.log(`   公司负责人: owner1 / owner123456 (ID: ${companyOwner.id}, Role: ${companyOwner.role})`);
 
-    // 业务部管理员
+    // 业务部管理员 - 密码: deptadmin123456
     const deptAdmin = await prisma.user.upsert({
       where: { username: 'deptadmin1' },
       update: {},
@@ -128,9 +141,9 @@ async function main() {
         status: 'ACTIVE',
       },
     });
-    console.log(`   业务部管理员: deptadmin1 / deptadmin123456 (ID: ${deptAdmin.id})`);
+    console.log(`   业务部管理员: deptadmin1 / deptadmin123456 (ID: ${deptAdmin.id}, Role: ${deptAdmin.role})`);
 
-    // 操作员
+    // 操作员 - 密码: operator123456
     const operator = await prisma.user.upsert({
       where: { username: 'operator1' },
       update: {},
@@ -146,9 +159,9 @@ async function main() {
         status: 'ACTIVE',
       },
     });
-    console.log(`   操作员: operator1 / operator123456 (ID: ${operator.id})`);
+    console.log(`   操作员: operator1 / operator123456 (ID: ${operator.id}, Role: ${operator.role})`);
 
-    // 外包业务员
+    // 外包业务员 - 密码: outsource123456
     const outsource = await prisma.user.upsert({
       where: { username: 'outsource1' },
       update: {},
@@ -163,9 +176,9 @@ async function main() {
         status: 'ACTIVE',
       },
     });
-    console.log(`   外包业务员: outsource1 / outsource123456 (ID: ${outsource.id})`);
+    console.log(`   外包业务员: outsource1 / outsource123456 (ID: ${outsource.id}, Role: ${outsource.role})`);
 
-    // 普通用户
+    // 普通用户 - 密码: customer123456
     const customer = await prisma.user.upsert({
       where: { username: 'customer1' },
       update: {},
@@ -180,7 +193,7 @@ async function main() {
         status: 'ACTIVE',
       },
     });
-    console.log(`   普通用户: customer1 / customer123456 (ID: ${customer.id})`);
+    console.log(`   普通用户: customer1 / customer123456 (ID: ${customer.id}, Role: ${customer.role})`);
 
     // 4. 创建客户
     console.log('\n4. 创建测试客户...');
@@ -189,7 +202,7 @@ async function main() {
       where: { id: 1 },
       update: {},
       create: {
-        id: 1,
+id: 1,
         name: '张三',
         phone: '13900000001',
         email: 'zhangsan@example.com',
@@ -230,44 +243,25 @@ async function main() {
     });
     console.log(`   订单: ${order1.orderNo} (状态: ${order1.status})`);
 
-    // 创建资料清单
-    console.log('\n6. 创建资料清单...');
-    
-    const docs = [
-      { name: '护照', isRequired: true },
-      { name: '身份证', isRequired: true },
-      { name: '户口本', isRequired: true },
-      { name: '照片', isRequired: true },
-      { name: '银行流水', isRequired: true },
-    ];
-
-    for (let i = 0; i < docs.length; i++) {
-      await prisma.documentRequirement.create({
-        data: {
-          name: docs[i].name,
-          isRequired: docs[i].isRequired,
-          status: 'PENDING',
-          orderId: order1.id,
-          sortOrder: i,
-        },
-      });
-    }
-    console.log(`   已创建 ${docs.length} 项资料清单`);
-
     console.log('\n========== 数据库初始化完成 ==========');
     console.log('\n测试账号:');
     console.log('  超级管理员: superadmin / 123456');
-    console.log('  公司负责人: owner1 / owner123456');
+    console.log('  公司负责人:   owner1 / owner123456');
     console.log('  业务部管理员: deptadmin1 / deptadmin123456');
-    console.log('  操作员: operator1 / operator123456');
-    console.log('  外包业务员: outsource1 / outsource123456');
-    console.log('  普通用户: customer1 / customer123456');
+    console.log('  操作员:       operator1 / operator123456');
+    console.log('  外包业务员:   outsource1 / outsource123456');
+    console.log('  普通用户:     customer1 / customer123456');
 
   } catch (error) {
     console.error('初始化失败:', error);
+    throw error;
   } finally {
     await prisma.$disconnect();
   }
 }
 
-main();
+main()
+  .catch((e) => {
+    console.error(e);
+    process.exit(1);
+  });
