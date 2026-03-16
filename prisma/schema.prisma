@@ -1,0 +1,359 @@
+// 沐海旅行签证ERP系统 - Prisma数据模型
+// 多租户架构 + 6级角色权限体系
+// 主机: rm-bp159g3iw669447778o.mysql.rds.aliyuncs.com
+// 端口: 3306
+// 数据库: visa
+// 用户: visa
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// ============ 角色枚举 ============
+enum UserRole {
+  SUPER_ADMIN      // 超级管理员: 网站最高权限，管理所有入驻公司
+  COMPANY_OWNER   // 公司负责人: 公司最高权限，可查看公司所有数据
+  DEPT_ADMIN      // 业务部管理员: 部门最高权限，可查看部门数据
+  OPERATOR        // 业务部门操作员: 员工权限，仅能操作自己分配的订单
+  OUTSOURCE       // 外包业务员: 受限权限，敏感信息脱敏
+  CUSTOMER        // 普通用户: 客户端用户，只能从"我的订单"进入查看
+}
+
+// ============ 订单状态枚举 ============
+enum OrderStatus {
+  PENDING_CONNECTION  // 待对接
+  CONNECTED          // 已对接
+  COLLECTING_DOCS    // 资料收集中
+  PENDING_REVIEW     // 待审核
+  UNDER_REVIEW       // 资料审核中
+  MAKING_MATERIALS   // 材料制作中
+  PENDING_DELIVERY   // 待交付
+  DELIVERED          // 已交付
+  APPROVED           // 出签
+  REJECTED           // 拒签
+}
+
+// ============ 资料状态枚举 ============
+enum DocumentStatus {
+  PENDING   // 待上传/待审核
+  APPROVED  // 合格
+  REJECTED  // 打回
+}
+
+// ============ 资料员操作状态 ============
+enum DocumentReviewStatus {
+  PENDING   // 待传
+  PENDING_REVIEW  // 待审
+  APPROVED  // 合格
+  REJECTED  // 打回
+}
+
+// ============ 预约状态 ============
+enum AppointmentStatus {
+  SCHEDULED  // 已预约
+  COMPLETED  // 已完成
+  CANCELLED  // 已取消
+}
+
+// ============ 用户状态 ============
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  DELETED
+}
+
+// ============ 公司表 ============
+model Company {
+  id        Int       @id @default(autoincrement())
+  name      String    @db.VarChar(100)    // 公司名称
+  shortName String?   @db.VarChar(50)     // 简称
+  logo      String?   @db.VarChar(255)    // Logo URL
+  phone     String?   @db.VarChar(20)     // 联系电话
+  email     String?   @db.VarChar(100)    // 邮箱
+  address   String?   @db.VarChar(255)    // 地址
+  status    String    @default("active")  // active/inactive
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // 关联
+  users        User[]
+  departments  Department[]
+  orders       Order[]
+  customers    Customer[]
+}
+
+// ============ 部门表 ============
+model Department {
+  id          Int       @id @default(autoincrement())
+  name        String    @db.VarChar(100)    // 部门名称
+  code        String?   @db.VarChar(50)     // 部门编码
+  description String?   @db.Text             // 描述
+  parentId    Int?                            // 父部门ID
+  leaderId    Int?                            // 负责人ID
+  status      String    @default("active")  // active/inactive
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // 外键
+  companyId   Int
+  company     Company   @relation(fields: [companyId], references: [id])
+
+  // 自关联
+  parent      Department?  @relation("DepartmentHierarchy", fields: [parentId], references: [id])
+  children    Department[] @relation("DepartmentHierarchy")
+
+  // 关联
+  users       User[]
+  orders      Order[]
+
+  @@index([companyId])
+  @@index([parentId])
+}
+
+// ============ 用户表 ============
+model User {
+  id           Int        @id @default(autoincrement())
+  email        String?    @unique @db.VarChar(100)
+  username     String     @unique @db.VarChar(50)   // 用户名
+  passwordHash String     @db.VarChar(255)          // 密码哈希
+  name         String     @db.VarChar(50)           // 真实姓名
+  phone        String?    @db.VarChar(20)           // 电话
+  avatar       String?    @db.VarChar(255)          // 头像URL
+  role         UserRole   @default(CUSTOMER)        // 角色
+  status       UserStatus @default(ACTIVE)          // 状态
+  lastLoginAt  DateTime?                            // 最后登录时间
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  // 外键
+  companyId    Int?
+  company      Company?    @relation(fields: [companyId], references: [id])
+  departmentId Int?
+  department   Department? @relation(fields: [departmentId], references: [id])
+
+  // 关联
+  customer          Customer?        @relation("UserCustomer")
+  ordersAsCs        Order[]          @relation("OrderCs")
+  ordersAsDc        Order[]          @relation("OrderDc")
+  ordersAsOp        Order[]          @relation("OrderOp")
+  orderLogs         OrderLog[]
+  loginLogs         LoginLog[]
+  visaMaterials     VisaMaterial[]
+
+  @@index([companyId])
+  @@index([departmentId])
+  @@index([role])
+}
+
+// ============ 客户表 ============
+model Customer {
+  id           Int       @id @default(autoincrement())
+  name         String    @db.VarChar(100)     // 客户姓名
+  phone        String?   @db.VarChar(20)      // 电话
+  email        String?   @db.VarChar(100)     // 邮箱
+  passportNo   String?   @db.VarChar(50)      // 护照号
+  idCardNo     String?   @db.VarChar(20)      // 身份证号
+  gender       String?   @db.VarChar(10)      // 性别
+  birthDate    DateTime?                         // 出生日期
+  nationality String?   @db.VarChar(50)      // 国籍
+  address      String?   @db.VarChar(255)     // 地址
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  // 外键
+  companyId    Int
+  company      Company   @relation(fields: [companyId], references: [id])
+  userId        Int?     @unique                        // 关联登录账号
+  user         User?     @relation("UserCustomer", fields: [userId], references: [id])
+
+  // 关联
+  orders       Order[]
+
+  @@index([companyId])
+  @@index([userId])
+  @@index([phone])
+}
+
+// ============ 订单表 ============
+model Order {
+  id              Int          @id @default(autoincrement())
+  orderNo         String       @unique @db.VarChar(50)    // 订单号
+  
+  // 签证信息
+  visaCountry     String       @db.VarChar(50)             // 签证国家
+  visaType        String       @db.VarChar(50)             // 签证类型
+  entryType       String?      @db.VarChar(20)             // 入境类型(单次/多次)
+  stayDuration    Int?                                   // 停留天数
+  validityDays    Int?                                   // 有效期天数
+  
+  // 状态
+  status          OrderStatus  @default(PENDING_CONNECTION)
+  appointmentDate DateTime?                              // 预约日期
+  submissionDate  DateTime?                              // 提交日期
+  deliveryDate    DateTime?                              // 交付日期
+  resultDate      DateTime?                              // 出结果日期
+  
+  // 金额
+  visaFee         Decimal?     @db.Decimal(10, 2)        // 签证费
+  serviceFee      Decimal?     @db.Decimal(10, 2)        // 服务费
+  totalFee        Decimal?     @db.Decimal(10, 2)       // 总费用
+  paymentStatus   String       @default("unpaid")        // 支付状态: unpaid/paid
+  
+  // 备注
+  remark          String?      @db.Text                   // 备注
+  rejectReason    String?      @db.Text                   // 拒签原因
+  
+  // 时间戳
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  // 外键
+  companyId       Int
+  company         Company      @relation(fields: [companyId], references: [id])
+  customerId      Int
+  customer        Customer     @relation(fields: [customerId], references: [id])
+  
+  // 受理人员
+  csId            Int?                                    // 客服ID
+  cs              User?        @relation("OrderCs", fields: [csId], references: [id])
+  dcId            Int?                                    // 资料员ID
+  dc              User?        @relation("OrderDc", fields: [dcId], references: [id])
+  opId            Int?                                    // 操作员ID
+  op              User?        @relation("OrderOp", fields: [opId], references: [id])
+  
+  // 部门
+  departmentId    Int?
+  department      Department?  @relation(fields: [departmentId], references: [id])
+
+  // 关联
+  documentRequirements DocumentRequirement[]
+  visaMaterials       VisaMaterial[]
+  orderLogs           OrderLog[]
+  appointments        Appointment[]
+
+  @@index([companyId])
+  @@index([customerId])
+  @@index([csId])
+  @@index([dcId])
+  @@index([opId])
+  @@index([status])
+  @@index([orderNo])
+}
+
+// ============ 资料清单表(客户需要上传的资料) ============
+model DocumentRequirement {
+  id           Int                  @id @default(autoincrement())
+  name         String               @db.VarChar(100)    // 资料名称
+  description  String?              @db.VarChar(255)    // 资料描述
+  isRequired  Boolean              @default(true)      // 是否必填
+  sortOrder    Int                  @default(0)         // 排序
+  
+  // 状态
+  status       DocumentReviewStatus @default(PENDING)   // 待传/待审/合格/打回
+  rejectReason String?              @db.Text           // 打回原因
+  fileUrl      String?              @db.VarChar(500)   // 文件URL
+  uploadedAt  DateTime?                                 // 上传时间
+  reviewedAt  DateTime?                                 // 审核时间
+  reviewedBy  Int?                                       // 审核人ID
+  
+  // 外键
+  orderId      Int
+  order        Order                @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@index([orderId])
+  @@index([status])
+}
+
+// ============ 签证材料表(制作出的材料) ============
+model VisaMaterial {
+  id           Int           @id @default(autoincrement())
+  name         String        @db.VarChar(100)    // 材料名称
+  type         String        @db.VarChar(50)     // 材料类型
+  fileUrl      String?       @db.VarChar(500)    // 文件URL
+  
+  // 状态
+  status       DocumentStatus @default(PENDING)   // 待审/合格/打回
+  rejectReason String?       @db.Text            // 打回原因
+  reviewedAt  DateTime?                          // 审核时间
+  
+  // 外键
+  orderId      Int
+  order        Order         @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  createdBy    Int?
+  creator      User?         @relation(fields: [createdBy], references: [id])
+  
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([orderId])
+  @@index([status])
+}
+
+// ============ 订单日志表 ============
+model OrderLog {
+  id          Int       @id @default(autoincrement())
+  action      String    @db.VarChar(50)       // 操作动作
+  content     String?   @db.Text              // 操作内容
+  fromStatus  String?   @db.VarChar(50)       // 原状态
+  toStatus    String?   @db.VarChar(50)       // 新状态
+  
+  // 外键
+  orderId     Int
+  order       Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  userId      Int
+  user        User      @relation(fields: [userId], references: [id])
+  
+  createdAt   DateTime  @default(now())
+
+  @@index([orderId])
+  @@index([userId])
+}
+
+// ============ 预约表 ============
+model Appointment {
+  id               Int              @id @default(autoincrement())
+  appointmentDate  DateTime          // 预约日期
+  appointmentTime  String?          @db.VarChar(20)     // 预约时间
+  location         String?          @db.VarChar(200)    // 地点
+  contactPerson    String?          @db.VarChar(50)     // 联系人
+  contactPhone     String?          @db.VarChar(20)     // 联系电话
+  status           AppointmentStatus @default(SCHEDULED)
+  remark           String?          @db.Text            // 备注
+  documentPath     String?          @db.VarChar(500)    // 材料路径
+  
+  // 外键
+  orderId          Int
+  order            Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  @@index([orderId])
+  @@index([appointmentDate])
+}
+
+// ============ 登录日志表 ============
+model LoginLog {
+  id           Int       @id @default(autoincrement())
+  ipAddress    String?   @db.VarChar(50)      // IP地址
+  userAgent    String?   @db.Text             // 用户代理
+  loginStatus  String    @default("success")  // success/failed
+  failReason   String?   @db.VarChar(255)     // 失败原因
+  
+  // 外键
+  userId       Int
+  user         User      @relation(fields: [userId], references: [id])
+  
+  createdAt    DateTime  @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}
