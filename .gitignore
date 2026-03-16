@@ -1,0 +1,39 @@
+# 环境变量（包含敏感信息）
+.env.local
+.env
+.env.*.local
+
+# 部署配置文件（包含服务器路径）
+ecosystem.config.js
+ecosystem.start.sh
+
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Next.js
+.next/
+out/
+build/
+dist/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 大文件
+*.zip
+*.tar.gz
+*.7z
+
+# 日志
+logs/
+*.log

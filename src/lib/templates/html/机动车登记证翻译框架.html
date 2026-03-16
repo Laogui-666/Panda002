@@ -1,0 +1,406 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Motor Vehicle Register Translation Template</title>
+    <!-- 
+    ========================================================================
+    【核心执行指令 - System Prompt】
+    若识别到所需翻译文档为框架对应文档。请提取文档中的所有中文信息并翻译为专业的英文，然后将所有的 {{大写变量名}} 替换为正确的翻译内容。如果有留白字段，请直接删除变量名保留空白标签。直接输出完整的HTML代码。
+
+    【内置生成与翻译规则指南】（AI套用时请严格遵守）
+    1. 证件类型参考 (ID Certificate Types)：
+       - 居民身份证: Resident ID Card
+       - 统一社会信用代码: Unified Social Credit Code
+       - 营业执照: Business License
+    2. 日期格式 (Date Format)：
+       - 统一使用 "Month DD, YYYY" 格式，例如：June 13, 2020。
+    3. 车牌与代号 (Plate & Codes)：
+       - 车牌号（如 川AXXXXX）翻译为拼音首字母缩写加数字，如：CHUAN AXXXXX。
+       - VIN、发动机号保持原样大写字母和数字组合。
+    4. 尺寸与单位 (Dimensions & Units)：
+       - 带有长度/宽度/高度的字段，请按 "Length XXX Width XXX Height XXX mm" 的格式填入。
+       - 排量/功率 (Displacement/Power) 请按 "XXX ml / XXX kw" 的格式填入。
+    5. 空白处理 (Blank Fields)：
+       - 如果原件中某一项为空白，请将对应的占位符删除，切勿填入"N/A"或"None"。
+    ========================================================================
+    -->
+    <style>
+        body {
+            tab-interval: 21pt;
+            text-justify-trim: punctuation;
+            font-family: 'Times New Roman', SimSun, serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #fff;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .section {
+            layout-grid: 15.6pt;
+            width: 100%;
+            max-width: 800px;
+        }
+        
+        .mso-normal {
+            margin: 0;
+            text-align: left;
+            line-height: 1.5;
+        }
+        
+        .mso-normal.right {
+            text-align: right;
+        }
+        
+        .mso-normal.center {
+            text-align: center;
+        }
+        
+        .registration-table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-top: 10px;
+        }
+        
+        .registration-table td {
+            padding: 4px 6px;
+            vertical-align: middle;
+        }
+        
+        .bold {
+            font-weight: bold;
+        }
+        
+        .header-title {
+            font-size: 14pt;
+            letter-spacing: 1px;
+        }
+        
+        .field-label {
+            font-size: 9pt;
+            font-weight: bold;
+        }
+        
+        .field-value {
+            font-size: 10.5pt;
+        }
+        
+        .border-all {
+            border: 1pt solid windowtext;
+        }
+    </style>
+</head>
+<body>
+<div class="section">
+    <!-- 顶部编号区域 -->
+    <p class="mso-normal">
+        <span class="field-value">{{TOP_BARCODE_OR_SERIAL}}</span>
+    </p>
+    
+    <p class="mso-normal right">
+        <span class="bold">Motor Vehicle Register No.: </span>
+        <span class="bold">{{REGISTER_NO}}</span>
+    </p>
+    
+    <table class="registration-table">
+        <!-- ==================== 第一部分：登记摘要 ==================== -->
+        <tr>
+            <td colspan="12" class="border-all">
+                <p class="mso-normal center">
+                    <b class="header-title">Registration Summary</b>
+                </p>
+            </td>
+        </tr>
+        
+        <tr>
+            <td width="3%" rowspan="2" class="border-all">
+                <p class="mso-normal center">
+                    <span>I</span>
+                </p>
+            </td>
+            <td width="30%" colspan="3" class="border-all">
+                <p class="mso-normal">
+                    <b class="field-label">1. Motor Vehicle Owner / Type and Number of Identification Certificate</b>
+                </p>
+            </td>
+            <td width="67%" colspan="8" class="border-all">
+                <p class="mso-normal">
+                    <span class="field-value">{{OWNER_NAME}}</span>
+                    <b> / </b>
+                    <span class="field-value">{{ID_CERTIFICATE_TYPE}}</span> 
+                    <b> / </b>
+                    <span class="field-value">{{ID_CERTIFICATE_NO}}</span>
+                </p>
+            </td>
+        </tr>
+        
+        <tr>
+            <td width="15%" class="border-all">
+                <p class="mso-normal">
+                    <b class="field-label">2. Registration Authority</b>
+                </p>
+            </td>
+            <td width="25%" colspan="4" class="border-all">
+                <p class="mso-normal">
+                    <span class="field-value">{{REGISTRATION_AUTHORITY}}</span>
+                </p>
+            </td>
+            <td width="12%" colspan="2" class="border-all">
+                <p class="mso-normal">
+                    <b class="field-label">3. Registration Date</b>
+                </p>
+            </td>
+            <td width="15%" class="border-all">
+                <p class="mso-normal">
+                    <span class="field-value">{{REGISTRATION_DATE}}</span>
+                </p>
+            </td>
+            <td width="15%" colspan="2" class="border-all">
+                <p class="mso-normal">
+                    <b class="field-label">4. Registration No. of Motor Vehicle</b>
+                </p>
+            </td>
+            <td width="15%" class="border-all">
+                <p class="mso-normal">
+                    <span class="field-value">{{MOTOR_VEHICLE_REG_NO}}</span>
+                </p>
+            </td>
+        </tr>
+        
+        <!-- ==================== 第二部分：注册机动车信息 ==================== -->
+        <tr>
+            <td colspan="12">
+                <p class="mso-normal center">
+                    <b class="header-title">Registered Motor Vehicle Information</b>
+                </p>
+            </td>
+        </tr>
+        
+        <tr>
+            <td width="25%" colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">5. Vehicle Type</b></p>
+            </td>
+            <td width="35%" colspan="4" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{VEHICLE_TYPE}}</span></p>
+            </td>
+            <td width="20%" colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">6. Vehicle Brand</b></p>
+            </td>
+            <td width="20%" colspan="2" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{VEHICLE_BRAND}}</span></p>
+            </td>
+        </tr>
+        
+        <tr>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">7. Vehicle Models</b></p>
+            </td>
+            <td colspan="4" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{VEHICLE_MODELS}}</span></p>
+            </td>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">8. Color</b></p>
+            </td>
+            <td colspan="2" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{VEHICLE_COLOR}}</span></p>
+            </td>
+        </tr>
+        
+        <tr>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">9. VIN</b></p>
+            </td>
+            <td colspan="4" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{VIN}}</span></p>
+            </td>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">10. Made-in-China / Imported</b></p>
+            </td>
+            <td colspan="2" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{MADE_IN_CHINA_OR_IMPORTED}}</span></p>
+            </td>
+        </tr>
+        
+        <tr>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">11. Engine No.</b></p>
+            </td>
+            <td colspan="4" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{ENGINE_NO}}</span></p>
+            </td>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">12. Engine Model</b></p>
+            </td>
+            <td colspan="2" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{ENGINE_MODEL}}</span></p>
+            </td>
+        </tr>
+        
+        <tr>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">13. Fuel Type</b></p>
+            </td>
+            <td colspan="4" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{FUEL_TYPE}}</span></p>
+            </td>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">14. Displacement / Power Output</b></p>
+            </td>
+            <td colspan="2" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{DISPLACEMENT_POWER}}</span></p>
+            </td>
+        </tr>
+        
+        <tr>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">15. Manufacturer</b></p>
+            </td>
+            <td colspan="4" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{MANUFACTURER}}</span></p>
+            </td>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">16. Steering Mode</b></p>
+            </td>
+            <td colspan="2" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{STEERING_MODE}}</span></p>
+            </td>
+        </tr>
+        
+        <tr>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">17. Wheel Track</b></p>
+            </td>
+            <td colspan="4" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{WHEEL_TRACK}}</span></p>
+            </td>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">18. Number of Tyres</b></p>
+            </td>
+            <td colspan="2" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{NUMBER_OF_TYRES}}</span></p>
+            </td>
+        </tr>
+        
+        <tr>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">19. Tyre Specification</b></p>
+            </td>
+            <td colspan="4" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{TYRE_SPECIFICATION}}</span></p>
+            </td>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">20. Number of Leaf Spring</b></p>
+            </td>
+            <td colspan="2" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{NUMBER_OF_LEAF_SPRING}}</span></p>
+            </td>
+        </tr>
+        
+        <tr>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">21. Wheelbase</b></p>
+            </td>
+            <td colspan="4" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{WHEELBASE}}</span></p>
+            </td>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">22. Number of Axles</b></p>
+            </td>
+            <td colspan="2" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{NUMBER_OF_AXLES}}</span></p>
+            </td>
+        </tr>
+        
+        <!-- 包含发证机关印章跨行的特殊区域 -->
+        <tr>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">23. Outline Dimension</b></p>
+            </td>
+            <td colspan="7" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{OUTLINE_DIMENSION}}</span></p>
+            </td>
+            <td colspan="2" rowspan="6" class="border-all" style="vertical-align: top;">
+                <p class="mso-normal">
+                    <b class="field-label">33. Seal of Issuing Authority:</b><br>
+                    <span class="field-value">{{ISSUING_AUTHORITY_SEAL}}</span><br>
+                    <br><br>
+                    <b class="field-label">34. Date of Issue: </b><br>
+                    <span class="field-value">{{ISSUE_DATE}}</span>
+                </p>
+            </td>
+        </tr>
+        
+        <tr>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">24. Interior Dimension of Container</b></p>
+            </td>
+            <td colspan="7" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{INTERIOR_DIMENSION}}</span></p>
+            </td>
+        </tr>
+        
+        <tr>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">25. Total Mass</b></p>
+            </td>
+            <td colspan="2" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{TOTAL_MASS}}</span></p>
+            </td>
+            <td colspan="2" class="border-all">
+                <p class="mso-normal"><b class="field-label">26. Ratified Load Capacity</b></p>
+            </td>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{RATIFIED_LOAD_CAPACITY}}</span></p>
+            </td>
+        </tr>
+        
+        <tr>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">27. Ratified Seating Capacity</b></p>
+            </td>
+            <td colspan="2" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{RATIFIED_SEATING_CAPACITY}}</span></p>
+            </td>
+            <td colspan="2" class="border-all">
+                <p class="mso-normal"><b class="field-label">28. Traction Mass</b></p>
+            </td>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{TRACTION_MASS}}</span></p>
+            </td>
+        </tr>
+        
+        <tr>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">29. Seating Capacity of Cab</b></p>
+            </td>
+            <td colspan="2" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{SEATING_CAPACITY_OF_CAB}}</span></p>
+            </td>
+            <td colspan="2" class="border-all">
+                <p class="mso-normal"><b class="field-label">30. Usage</b></p>
+            </td>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{USAGE}}</span></p>
+            </td>
+        </tr>
+        
+        <tr>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><b class="field-label">31. Source of Vehicle</b></p>
+            </td>
+            <td colspan="2" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{SOURCE_OF_VEHICLE}}</span></p>
+            </td>
+            <td colspan="2" class="border-all">
+                <p class="mso-normal"><b class="field-label">32. Manufacture Date</b></p>
+            </td>
+            <td colspan="3" class="border-all">
+                <p class="mso-normal"><span class="field-value">{{MANUFACTURE_DATE}}</span></p>
+            </td>
+        </tr>
+    </table>
+
+</div>
+</body>
+</html>

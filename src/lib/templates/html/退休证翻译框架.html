@@ -1,0 +1,283 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{DOCUMENT_TITLE}}</title>
+    <!-- 
+    ===========================================================================
+    【LLM 自动化翻译与生成规则 / LLM AUTO-TRANSLATION & GENERATION RULES】
+    若识别到所需翻译文档为框架对应文档。请提取文档中的所有中文信息并翻译为专业的英文，然后将所有的 {{大写变量名}} 替换为正确的翻译内容。如果有留白字段，请直接删除变量名保留空白标签。直接输出完整的HTML代码。
+    
+    [动态增删规则]：
+    1. 根据源文档的实际内容，您可以自由增加或删除带有注释提示的结构块（如表格的 tr 行、备注的 p 标签等），以适配不同字段数量的文档。
+    2. 确保在增加或删除时，保持原有 HTML 结构的排版和类名完整。
+    3. 请严格保持页面布局，特别是“第一页”和“第二页”的 page-break 分页结构。
+    ===========================================================================
+    -->
+    <style>
+        /* ============================
+           基础排版与打印设置
+           ============================ */
+        @page {
+            size: A4 portrait;
+            margin: 2cm;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        
+        /* ============================
+           页面主容器
+           ============================ */
+        .page-container {
+            width: 210mm;
+            min-height: 297mm;
+            background-color: white;
+            margin: 0 auto;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            position: relative;
+            padding: 0;
+        }
+        
+        /* 第一页内容区域 - 限制高度，为底部留出五分之二空白 */
+        .page-content {
+            padding: 20px 30px;
+            min-height: 178mm; /* 297mm * 3/5 = 178mm，确保内容区域只占五分之三 */
+        }
+        
+        /* 第二页内容区域 */
+        .page-two-content {
+            padding: 20px 30px;
+            min-height: 178mm;
+        }
+        
+        /* ============================
+           头部标题样式
+           ============================ */
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .main-title {
+            font-size: 36px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            letter-spacing: 3px;
+        }
+        
+        .sub-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        /* ============================
+           照片区域样式
+           ============================ */
+        .photo-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 40px;
+        }
+        
+        .photo-box {
+            width: 3.5cm;
+            height: 4.5cm;
+            border: 3px solid #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        .photo-note {
+            text-align: center;
+            font-size: 14px;
+            line-height: 1.5;
+            color: #555;
+            max-width: 80%;
+        }
+        
+        /* ============================
+           核心文档信息（居中显示）
+           ============================ */
+        .document-info {
+            margin-bottom: 40px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .document-line {
+            font-size: 16px;
+            margin-bottom: 8px;
+        }
+        
+        /* ============================
+           表格样式
+           ============================ */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        
+        .info-table td {
+            border: 2px solid #000;
+            padding: 12px 15px;
+            vertical-align: top;
+            font-size: 16px;
+        }
+        
+        .info-table tr td:first-child {
+            font-weight: bold;
+            width: 35%;
+            background-color: #f9f9f9;
+        }
+        
+        .page-two-table {
+            margin-top: 30px;
+        }
+        
+        /* ============================
+           备注区域样式
+           ============================ */
+        .notes {
+            margin-top: 40px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+        
+        .notes p {
+            margin: 8px 0;
+        }
+        
+        /* 通用加粗 */
+        .bold {
+            font-weight: bold;
+        }
+        
+        /* ============================
+           强制分页与打印优化
+           ============================ */
+        .page-break {
+            page-break-before: always;
+        }
+        
+        @media print {
+            body {
+                background-color: white;
+                margin: 0;
+                padding: 0;
+            }
+            
+            .page-container {
+                box-shadow: none;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ================= 第一页 / PAGE 1 ================= -->
+    <div class="page-container">
+        <div class="page-content">
+            <!-- 头部 -->
+            <div class="header">
+                <div class="main-title">{{MAIN_TITLE_ENGLISH}}</div>
+                <div class="sub-title">Page 1</div>
+            </div>
+            
+            <!-- 照片区域 -->
+            <div class="photo-container">
+                <div class="photo-box">
+                    Photo
+                </div>
+                <div class="photo-note">
+                    {{PHOTO_NOTE_TEXT}}
+                </div>
+            </div>
+            
+            <!-- 文档核心信息 -->
+            <div class="document-info">
+                <!-- 动态信息行：可根据原件内容增删 document-line 结构 -->
+                <div class="document-line">
+                    <span class="bold">{{ID_NUMBER_LABEL}}:</span> {{ID_NUMBER_VALUE}}
+                </div>
+                <div class="document-line">
+                    <span class="bold">{{SSN_LABEL}}:</span> {{SSN_VALUE}}
+                </div>
+                <div class="document-line">
+                    <span class="bold">{{ISSUE_DATE_LABEL}}:</span> {{ISSUE_DATE_VALUE}}
+                </div>
+            </div>
+            
+            <!-- 信息表格一 -->
+            <table class="info-table">
+                <!-- 动态表格行：请根据源文档字段数量，复制或删除以下 tr -->
+                <tr>
+                    <td>{{FIELD_1_LABEL}}</td>
+                    <td>{{FIELD_1_VALUE}}</td>
+                </tr>
+                <tr>
+                    <td>{{FIELD_2_LABEL}}</td>
+                    <td>{{FIELD_2_VALUE}}</td>
+                </tr>
+                <tr>
+                    <td>{{FIELD_3_LABEL}}</td>
+                    <td>{{FIELD_3_VALUE}}</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- ================= 第二页 / PAGE 2 ================= -->
+    <div class="page-container page-break">
+        <div class="page-two-content">
+            <!-- 头部 -->
+            <div class="header">
+                <div class="sub-title">Page 2</div>
+            </div>
+            
+            <!-- 信息表格二 -->
+            <table class="info-table page-two-table">
+                <!-- 动态表格行：请根据源文档字段数量，复制或删除以下 tr -->
+                <tr>
+                    <td>{{FIELD_N1_LABEL}}</td>
+                    <td>{{FIELD_N1_VALUE}}</td>
+                </tr>
+                <tr>
+                    <td>{{FIELD_N2_LABEL}}</td>
+                    <td>{{FIELD_N2_VALUE}}</td>
+                </tr>
+                <tr>
+                    <td>{{FIELD_N3_LABEL}}</td>
+                    <td>{{FIELD_N3_VALUE}}</td>
+                </tr>
+            </table>
+            
+            <!-- 备注说明区域 -->
+            <div class="notes">
+                <p><strong>Notes:</strong></p>
+                <!-- 动态备注行：请根据源文档的条款数量，复制或删除以下 p -->
+                <p>1. {{NOTE_1_TEXT}}</p>
+                <p>2. {{NOTE_2_TEXT}}</p>
+                <p>3. {{NOTE_3_TEXT}}</p>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
