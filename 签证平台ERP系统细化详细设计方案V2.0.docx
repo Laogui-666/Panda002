@@ -1,0 +1,535 @@
+# 签证平台ERP系统细化详细设计方案
+
+---
+
+## 一、总体可行性评估
+
+### 1.1 平台开发能力评估
+
+**结论：本平台完全可以完成该系统的全部内容开发**
+
+| 技术领域 | 平台能力 | 适配度 |
+|---------|----------|--------|
+| 前端界面 | Next.js + React + Tailwind CSS | ★★★★★ 完美适配 |
+| 后端逻辑 | Next.js API Routes / Node.js | ★★★★★ 完美适配 |
+| 数据库 | MySQL / PostgreSQL / Supabase | ★★★★★ 完美适配 |
+| 文件存储 | 集成云存储服务 | ★★★★★ 完美适配 |
+| 用户认证 | NextAuth.js / Supabase Auth | ★★★★★ 完美适配 |
+| 权限管理 | RBAC角色权限系统 | ★★★★★ 完美适配 |
+
+**平台优势**：
+- 现有项目已是Next.js全栈架构，可以无缝集成ERP模块
+- 使用Supabase作为后端服务，可快速实现实时数据库、文件存储、认证
+- Tailwind CSS组件库可快速构建复杂的管理后台界面
+- 已有的用户系统可平滑扩展为多角色体系
+
+---
+
+## 二、系统集成架构设计
+
+### 2.1 双入口设计方案
+
+```
+                    ┌─────────────────────────────────────┐
+                    │           盼达旅行网站               │
+                    │           (现有项目)                 │
+                    └─────────────────────────────────────┘
+                                    │
+              ┌─────────────────────┼─────────────────────┐
+              │                     │                     │
+              ▼                     ▼                     ▼
+    ┌─────────────────┐  ┌─────────────────┐  ┌─────────────────┐
+    │    客户入口      │  │    管理员入口    │  │   公开页面      │
+    │  /profile/orders │  │  /admin/dashboard │  │   首页/服务    │
+    │   (我的订单)     │  │   (ERP后台)      │  │    等现有页面   │
+    └─────────────────┘  └─────────────────┘  └─────────────────┘
+```
+
+### 2.2 入口详细说明
+
+| 入口路径 | 适用角色 | 访问条件 | 界面功能 |
+|---------|----------|----------|----------|
+| `/profile/orders` | 客户 | 已登录 | 查看我的订单、上传资料、查看进度 |
+| `/profile` | 客户 | 已登录 | 个人信息面板新增"进入后台"入口 |
+| `/admin/dashboard` | 客服/资料员/操作员/管理员 | 管理员角色 | ERP后台管理主界面 |
+| `/admin/orders` | 客服/资料员/操作员/管理员 | 管理员角色 | 订单管理列表 |
+| `/admin/orders/[id]` | 客服/资料员/操作员/管理员 | 管理员角色 | 订单详情与操作 |
+
+### 2.3 权限路由保护
+
+```typescript
+// 路由守卫示例
+const rolePermissions = {
+  'customer': {
+    allowedRoutes: ['/profile', '/profile/orders', '/profile/orders/[id]'],
+    deniedRoutes: ['/admin']
+  },
+  'customer_service': {
+    allowedRoutes: ['/admin/orders', '/admin/orders/[id]'],
+    deniedRoutes: ['/admin/users', '/admin/settings']
+  },
+  'clerk': {
+    allowedRoutes: ['/admin/orders', '/admin/orders/[id]'],
+    deniedRoutes: ['/admin/finance']
+  },
+  'operator': {
+    allowedRoutes: ['/admin/orders', '/admin/orders/[id]'],
+    deniedRoutes: ['/admin/finance']
+  },
+  'admin': {
+    allowedRoutes: ['/admin/**'],  // 全部可访问
+    deniedRoutes: []
+  },
+  'company_owner': {
+    allowedRoutes: ['/admin/**'],  // 全部可访问
+    deniedRoutes: []
+  }
+};
+```
+
+---
+
+## 三、接口预留方案（暂不上线）
+
+### 3.1 短信通知接口
+
+**设计原则**：界面和流程完整实现，仅发送功能做模拟
+
+```typescript
+// 接口预留实现示例
+interface SMSService {
+  sendVerificationCode(phone: string): Promise<{success: boolean, message: string}>;
+  sendOrderNotification(orderId: string, template: string): Promise<{success: boolean}>;
+  sendAppointmentReminder(appointmentId: string): Promise<{success: boolean}>;
+}
+
+// 预留接口实现（控制台日志模拟）
+export const mockSMSService: SMSService = {
+  sendVerificationCode: async (phone) => {
+    console.log(`[MOCK SMS] 发送验证码到 ${phone}: 您的验证码是 123456`);
+    return { success: true, message: '短信接口已预留，验证码: 123456' };
+  },
+  sendOrderNotification: async (orderId, template) => {
+    console.log(`[MOCK SMS] 订单 ${orderId} 发送通知: ${template}`);
+    return { success: true };
+  },
+  sendAppointmentReminder: async (appointmentId) => {
+    console.log(`[MOCK SMS] 预约 ${appointmentId} 发送提醒`);
+    return { success: true };
+  }
+};
+```
+
+**UI表现**：
+- 发送按钮正常显示
+- 点击后弹出提示："短信接口已预留（模拟发送成功）"
+- 控制台输出模拟日志
+
+### 3.2 微信通知接口
+
+```typescript
+// 微信模板消息预留
+interface WeChatService {
+  sendTemplateMessage(openid: string, templateId: string, data: object): Promise<{success: boolean}>;
+  getUserInfo(openid: string): Promise<UserInfo>;
+}
+
+// 预留接口实现
+export const mockWeChatService: WeChatService = {
+  sendTemplateMessage: async (openid, templateId, data) => {
+    console.log(`[MOCK WECHAT] 发送模板消息给 ${openid}`, { templateId, data });
+    return { success: true };
+  },
+  getUserInfo: async (openid) => {
+    console.log(`[MOCK WECHAT] 获取用户信息: ${openid}`);
+    return { nickname: '微信用户', headimgurl: '/default-avatar.png' };
+  }
+};
+```
+
+### 3.3 站内聊天接口
+
+```typescript
+// 站内信/聊天预留
+interface ChatService {
+  sendMessage(fromUserId: string, toUserId: string, content: string): Promise<Message>;
+  getConversation(userId: string, targetUserId: string): Promise<Message[]>;
+  getUnreadCount(userId: string): Promise<number>;
+}
+
+// 预留接口实现（数据存储但不实时推送）
+export const mockChatService: ChatService = {
+  sendMessage: async (from, to, content) => {
+    // 保存到数据库但不实现WebSocket推送
+    const message = { id: generateId(), from, to, content, created_at: new Date() };
+    console.log(`[MOCK CHAT] 消息已存储:`, message);
+    return message;
+  },
+  getConversation: async () => [],
+  getUnreadCount: async () => 0
+};
+```
+
+---
+
+## 四、预约提醒功能详细设计
+
+### 4.1 功能需求分析
+
+**需求描述**：
+- 资料员可在订单信息中添加预约时间
+- 资料员可上传"预约单"文档
+- 若上传了"预约单"文档，该文档会在订单的"资料收集面板"中显示
+
+### 4.2 数据模型设计
+
+```typescript
+// 预约信息表
+interface Appointment {
+  id: string;                    // 主键
+  order_id: string;              // 关联订单ID
+  appointment_date: string;       // 预约日期时间 (ISO格式)
+  appointment_location: string;  // 预约地点
+  appointment_type: 'interview' | 'fingerprint' | 'submission' | 'other';  // 预约类型
+  document_url: string | null;   // 预约单文档URL
+  document_name: string | null;   // 预约单文档名称
+  notes: string;                  // 备注
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';  // 状态
+  created_by: string;             // 创建人ID
+  created_at: string;            // 创建时间
+  updated_at: string;            // 更新时间
+}
+
+// 扩展订单表
+interface Order {
+  // ... 现有字段
+  appointment_id: string | null;  // 关联预约ID
+}
+```
+
+### 4.3 管理端功能设计
+
+**订单详情面板 → 预约管理Tab**：
+
+| 功能 | 描述 | 交互 |
+|------|------|------|
+| 添加预约 | 弹出预约表单 | 点击按钮 → 填写日期时间/地点/类型 → 保存 |
+| 上传预约单 | 支持PDF/图片上传 | 点击上传 → 选择文件 → 自动关联到订单 |
+| 修改预约 | 编辑已有预约 | 点击编辑 → 修改信息 → 保存 |
+| 删除预约 | 取消预约 | 点击删除 → 确认 → 状态变更为cancelled |
+
+**预约表单字段**：
+
+| 字段 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| 预约日期时间 | datetime-local | 是 | 选择具体日期和时间 |
+| 预约地点 | text | 是 | 签证中心/使馆地址 |
+| 预约类型 | select | 是 | 面试/录指纹/递交材料/其他 |
+| 预约单文档 | file | 否 | 支持PDF/JPG/PNG，最大10MB |
+| 备注 | textarea | 否 | 特殊说明 |
+
+### 4.4 客户端功能设计
+
+**资料收集面板 → 预约信息展示**：
+
+| 条件 | 显示内容 |
+|------|----------|
+| 有预约时间，无预约单 | 显示预约时间卡片：预约日期、地点、类型 |
+| 有预约时间，有预约单 | 显示预约时间卡片 + **"查看预约单"按钮** |
+| 无预约时间 | 不显示预约区域 |
+| 面试/录指纹前一天 | 高亮显示提醒横幅 |
+
+**预约单文档显示**：
+
+```tsx
+// 客户端渲染逻辑
+{appointment && (
+  <div className="appointment-card bg-blue-50 p-4 rounded-lg">
+    <h4 className="font-semibold text-blue-800 mb-2">
+      📅 预约信息
+    </h4>
+    <div className="text-sm text-blue-700">
+      <p>📍 {appointment.appointment_location}</p>
+      <p>🕐 {formatDate(appointment.appointment_date)}</p>
+      <p>📋 {appointment.appointment_type === 'interview' ? '面试' : 
+            appointment.appointment_type === 'fingerprint' ? '录指纹' : 
+            appointment.appointment_type === 'submission' ? '递交材料' : '其他'}</p>
+    </div>
+    {appointment.document_url && (
+      <a 
+        href={appointment.document_url} 
+        target="_blank"
+        className="mt-3 inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+      >
+        📄 查看预约单
+      </a>
+    )}
+  </div>
+)}
+```
+
+### 4.5 文件上传实现
+
+```typescript
+// 预约单上传处理
+const handleAppointmentDocumentUpload = async (file: File) => {
+  // 1. 验证文件类型和大小
+  const allowedTypes = ['application/pdf', 'image/jpeg', 'image/png'];
+  const maxSize = 10 * 1024 * 1024; // 10MB
+  
+  if (!allowedTypes.includes(file.type)) {
+    throw new Error('仅支持 PDF、JPG、PNG 格式');
+  }
+  if (file.size > maxSize) {
+    throw new Error('文件大小不能超过 10MB');
+  }
+  
+  // 2. 上传到存储服务
+  const filePath = `appointments/${orderId}/${Date.now()}_${file.name}`;
+  const { data, error } = await supabase.storage
+    .from('documents')
+    .upload(filePath, file);
+    
+  if (error) throw error;
+  
+  // 3. 获取公开访问URL
+  const { data: { publicUrl } } = supabase.storage
+    .from('documents')
+    .getPublicUrl(filePath);
+    
+  return {
+    url: publicUrl,
+    name: file.name
+  };
+};
+```
+
+---
+
+## 五、模块化架构设计
+
+### 5.1 系统模块划分
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                     ERP管理系统                              │
+├─────────────┬─────────────┬─────────────┬────────────────┤
+│  用户中心    │   订单中心   │  资料中心    │   预约中心     │
+├─────────────┼─────────────┼─────────────┼────────────────┤
+│ • 角色管理   │ • 订单列表   │ • 资料上传   │ • 预约管理     │
+│ • 权限配置   │ • 订单详情   │ • 资料审核   │ • 文档上传     │
+│ • 账号管理   │ • 状态流转   │ • 资料下载   │ • 提醒设置     │
+│ • 操作日志   │ • 进度跟踪   │ • 资料归档   │ • 到期提醒     │
+├─────────────┴─────────────┴─────────────┼────────────────┤
+│              财务中心 (预留)            │   消息中心      │
+├─────────────────────────────────────────┼────────────────┤
+│ • 收款记录                           │ • 短信接口(预留) │
+│ • 发票管理                           │ • 微信接口(预留) │
+│ • 退款处理                           │ • 站内信(预留)   │
+└─────────────────────────────────────────┴────────────────┘
+```
+
+### 5.2 模块解耦设计
+
+**策略**：每个模块独立API路径、独立状态管理、独立UI组件
+
+```typescript
+// 模块目录结构
+src/
+├── app/
+│   ├── admin/
+│   │   ├── dashboard/        # 管理后台首页
+│   │   ├── orders/           # 订单中心
+│   │   │   ├── page.tsx      # 订单列表
+│   │   │   ├── [id]/          # 订单详情
+│   │   │   └── components/    # 订单模块组件
+│   │   ├── appointments/      # 预约中心
+│   │   │   ├── page.tsx      # 预约列表
+│   │   │   └── components/    # 预约模块组件
+│   │   ├── users/            # 用户中心
+│   │   └── settings/         # 系统设置
+│   └── profile/
+│       └── orders/           # 客户订单中心
+├── components/
+│   ├── admin/                # 管理端通用组件
+│   │   ├── OrderCard.tsx
+│   │   ├── AppointmentModal.tsx
+│   │   └── DataTable.tsx
+│   └── client/              # 客户端通用组件
+├── lib/
+│   ├── apis/                 # API封装
+│   │   ├── orders.ts         # 订单API
+│   │   ├── appointments.ts   # 预约API
+│   │   └── messages.ts       # 消息API(预留)
+│   ├── services/             # 业务逻辑
+│   │   ├── orderService.ts
+│   │   └── appointmentService.ts
+│   └── hooks/                # 自定义Hooks
+│       ├── useOrders.ts
+│       └── useAppointments.ts
+└── types/
+    ├── order.ts              # 订单类型定义
+    ├── appointment.ts        # 预约类型定义
+    └── user.ts               # 用户类型定义
+```
+
+---
+
+## 六、数据库表结构设计
+
+### 6.1 核心表清单
+
+| 表名 | 说明 | 关键字段 |
+|------|------|----------|
+| users | 用户表 | id, email, role, department, is_outsource |
+| orders | 订单表 | id, user_id, status, created_by, appointment_id |
+| order_logs | 订单日志 | id, order_id, action, operator_id, from_status, to_status |
+| documents | 资料文档 | id, order_id, type, file_url, uploaded_by, status |
+| appointments | 预约信息 | id, order_id, appointment_date, document_url, status |
+| messages | 站内消息(预留) | id, from_user, to_user, content, read_at |
+
+### 6.2 订单状态流转表
+
+```sql
+-- 订单状态流转规则表
+CREATE TABLE order_transitions (
+  id SERIAL PRIMARY KEY,
+  from_status VARCHAR(50) NOT NULL,
+  to_status VARCHAR(50) NOT NULL,
+  allowed_roles VARCHAR(255)[] NOT NULL,  -- 允许执行该操作的角色
+  action_name VARCHAR(100) NOT NULL,        -- 操作名称
+  action_label VARCHAR(100) NOT NULL,       -- 显示名称
+  requires_document BOOLEAN DEFAULT FALSE,   -- 是否需要上传资料
+  notification_template VARCHAR(50),          -- 发送通知模板
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- 初始化9大状态流转规则
+INSERT INTO order_transitions (from_status, to_status, allowed_roles, action_name, action_label) VALUES
+('pending_connect', 'connected', ARRAY['customer_service'], 'accept_order', '接单'),
+('connected', 'collecting', ARRAY['clerk'], 'start_collect', '开始收集资料'),
+('collecting', 'pending_review', ARRAY['clerk'], 'submit_review', '提交审核'),
+('pending_review', 'reviewing', ARRAY['operator'], 'accept_review', '接受审核'),
+('reviewing', 'processing', ARRAY['operator'], 'start_processing', '开始制作'),
+('processing', 'pending_delivery', ARRAY['operator'], 'ready_delivery', '待交付'),
+('pending_delivery', 'delivered', ARRAY['clerk'], 'confirm_delivery', '确认交付'),
+('delivered', 'approved', ARRAY['clerk', 'operator'], 'approve', '出签'),
+('delivered', 'rejected', ARRAY['clerk', 'operator'], 'reject', '拒签');
+```
+
+---
+
+## 七、开发周期与里程碑
+
+### 7.1 总周期：约8周
+
+| 阶段 | 周次 | 主要任务 | 交付物 |
+|------|------|----------|--------|
+| **准备阶段** | 第1周 | 需求确认、数据库设计、UI原型 | 设计文档、原型图 |
+| **第一阶段** | 第2-3周 | 用户系统、权限体系、订单核心CRUD | 用户管理、订单列表 |
+| **第二阶段** | 第4-5周 | 资料收集流程、状态流转引擎 | 资料上传/审核、状态变更 |
+| **第三阶段** | 第6周 | 预约管理功能、文档上传 | 预约单显示 |
+| **第四阶段** | 第7周 | 接口预留、客户端订单页集成 | 完整流程跑通 |
+| **第五阶段** | 第8周 | 测试、Bug修复、部署上线 | 上线版本 |
+
+### 7.2 里程碑检查点
+
+| 里程碑 | 完成标志 |
+|--------|----------|
+| M1 | 权限系统完成，不同角色可登录不同后台 |
+| M2 | 客服可录单，订单正确推送到资料员 |
+| M3 | 资料员可上传/审核资料，状态正确流转 |
+| M4 | 操作员可制作材料并交付 |
+| M5 | 预约功能上线，客户端可查看预约单 |
+| M6 | 全部测试通过，可上线部署 |
+
+---
+
+## 八、技术实现要点
+
+### 8.1 现有项目集成
+
+利用Next.js的App Router特性，直接在现有项目中创建管理后台路由：
+
+```typescript
+// app/admin/page.tsx - 管理后台首页
+// app/admin/orders/page.tsx - 订单管理
+// app/admin/orders/[id]/page.tsx - 订单详情
+// app/profile/orders/page.tsx - 客户订单中心
+```
+
+### 8.2 状态管理方案
+
+```typescript
+// 使用Zustand进行全局状态管理
+import { create } from 'zustand';
+
+// 订单状态管理
+interface OrderStore {
+  orders: Order[];
+  currentOrder: Order | null;
+  loading: boolean;
+  fetchOrders: () => Promise<void>;
+  updateOrderStatus: (id: string, status: string) => Promise<void>;
+}
+
+export const useOrderStore = create<OrderStore>((set, get) => ({
+  orders: [],
+  currentOrder: null,
+  loading: false,
+  fetchOrders: async () => {
+    set({ loading: true });
+    const { data } = await supabase.from('orders').select('*');
+    set({ orders:data || [], loading: false });
+  },
+  updateOrderStatus: async (id, status) => {
+    await supabase.from('orders').update({ status }).eq('id', id);
+    await get().fetchOrders();
+  }
+}));
+```
+
+---
+
+## 九、风险评估与应对
+
+| 风险 | 概率 | 影响 | 应对措施 |
+|------|------|------|----------|
+| 现有用户系统需改造 | 中 | 中 | 先分析现有用户表结构，尽量复用 |
+| 文件上传存储成本 | 低 | 中 | 先用Supabase免费额度，后续可迁移 |
+| 状态流转逻辑复杂 | 高 | 中 | 使用状态机库(如XState)管理 |
+| 多角色数据隔离 | 中 | 高 | 严格RLS策略+后端中间件校验 |
+
+---
+
+## 十、结论与建议
+
+### 10.1 综合评估
+
+| 评估项 | 评分 | 说明 |
+|--------|------|------|
+| 技术可行性 | ★★★★★ | 平台技术栈完全满足需求 |
+| 开发周期 | ★★★★☆ | 约8周，需投入4-6人 |
+| 开发成本 | ★★★★☆ | 相比外包可节省50%以上 |
+| 可维护性 | ★★★★★ | 模块化设计，易于扩展 |
+| 功能完整性 | ★★★★★ | 除接口预留外，功能齐全 |
+
+### 10.2 建议
+
+**建议立即执行**，理由如下：
+
+1. ✅ **完全可行**：技术栈完全匹配，无技术障碍
+2. ✅ **成本可控**：利用现有项目基础，开发效率高
+3. ✅ **风险可控**：分阶段交付，每个阶段可验证
+4. ✅ **扩展性强**：模块化设计，后续新增功能简单
+5. ✅ **接口预留**：短信/微信/聊天预留接口，不影响后续接入
+
+---
+
+**方案版本**：V2.0  
+**编制日期**：2026年3月16日  
+**编制人**：Matrix Agent
+
+---
+
+*本方案基于贵司需求编制，详细设计已充分考虑技术实现与用户体验平衡。*

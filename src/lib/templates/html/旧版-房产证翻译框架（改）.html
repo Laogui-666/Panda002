@@ -1,0 +1,205 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>House Ownership Certificate Translation Template</title>
+    <!-- 
+    ========================================================================
+    【核心执行指令 - System Prompt】
+    若识别到所需翻译文档为框架对应文档。请提取文档中的所有中文信息并翻译为专业的英文，然后将所有的 {{大写变量名}} 替换为正确的翻译内容。如果有留白字段，请直接删除变量名保留空白标签。直接输出完整的HTML代码。
+
+    【内置生成与翻译规则指南】（AI套用时请严格遵守）
+    1. 标题处理 (Title)：
+       - 标题通常包含城市名和监证字号，如："Chengdu House Ownership Certificate, Supervision Certificate No. XXXXXX"。请根据原件准确替换 {{CERTIFICATE_TITLE}}。
+    2. 地址翻译 (Address Format)：
+       - 必须从小单位到大单位排列（如：Room XX, XX Floor, Building XX, No. XX XXX Street, XXX District）。
+    3. 日期格式 (Date Format)：
+       - 统一使用 "YYYY-MM-DD" 格式（如原件为 2016年04月28日，译为 2016-04-28）或 "Month DD, YYYY" 格式，保持与原件风格一致。
+    4. 留白与无数据 (Blank Fields)：
+       - 若原件中包含“/”或“空白”，请直接保留“/”或删除变量名保留空标签。
+       - 若原件写明“未明确”或“空白”，可译为 "Not specified" 或 "N/A"。
+    ========================================================================
+    -->
+    <style>
+        /* 全局应用边框盒模型，防止 padding 撑大宽度 */
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Times New Roman', Arial, sans-serif;
+            font-size: 12pt;
+            color: #000;
+            margin: 0;
+            padding: 40px;
+            background-color: #fff;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .page {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .certificate-title {
+            font-size: 14pt;
+            font-weight: bold;
+            margin-bottom: 20px;
+            line-height: 1.5;
+            text-align: left;
+        }
+
+        /* 主表格基础样式 */
+        .main-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 15px;
+            table-layout: fixed; /* 固定布局，锁定整体比例 */
+        }
+
+        .main-table > tbody > tr > td {
+            border: 1pt solid #000;
+            padding: 8px 10px;
+            vertical-align: middle;
+            line-height: 1.5;
+            word-wrap: break-word;
+            overflow-wrap: break-word; /* 确保长单词/长数字强制换行 */
+        }
+
+        .label-bg {
+            background-color: #f2f2f2;
+            font-weight: bold;
+            width: 30%; 
+        }
+
+        /* 修复核心：子表格样式调整 */
+        .sub-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed; /* 修复溢出的关键：强行均分子表格列宽，禁止其根据内容无限变宽 */
+            margin: 0; /* 移除外边距，防止超出 */
+        }
+
+        .sub-table td {
+            border: 1pt solid #000;
+            padding: 6px 4px; /* 稍微减小左右内边距，给英文留出更多换行空间 */
+            text-align: center;
+            vertical-align: middle;
+            font-size: 11pt; /* 子表格字号微调，避免拥挤 */
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+        }
+
+        .sub-header-bg {
+            background-color: #f0f0f0;
+            font-weight: bold;
+        }
+
+        .remarks-title {
+            font-weight: bold;
+            margin-top: 10px;
+            margin-bottom: 5px;
+            font-size: 12pt;
+        }
+
+        .remarks-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        .remarks-table td {
+            border: 1pt solid #000;
+            padding: 10px;
+            line-height: 1.5;
+            min-height: 60px;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+
+<div class="page">
+    <!-- 证书标题 -->
+    <div class="certificate-title">
+        {{CERTIFICATE_TITLE}}
+    </div>
+
+    <!-- 主表格：房产信息 -->
+    <table class="main-table">
+        <tr>
+            <td class="label-bg">House Owner</td>
+            <td>{{HOUSE_OWNER}}</td>
+        </tr>
+        <tr>
+            <td class="label-bg">Co-ownership Status</td>
+            <td>{{CO_OWNERSHIP_STATUS}}</td>
+        </tr>
+        <tr>
+            <td class="label-bg">House Location</td>
+            <td>{{HOUSE_LOCATION}}</td>
+        </tr>
+        <tr>
+            <td class="label-bg">Registration Date</td>
+            <td>{{REGISTRATION_DATE}}</td>
+        </tr>
+        <tr>
+            <td class="label-bg">House Nature</td>
+            <td>{{HOUSE_NATURE}}</td>
+        </tr>
+        <!-- 行6：房屋状况（内嵌子表格） -->
+        <tr>
+            <td class="label-bg">House Status</td>
+            <td style="padding: 8px;"> <!-- 稍微缩减父级 padding 留出空间 -->
+                <table class="sub-table">
+                    <tr>
+                        <td class="sub-header-bg">Total number of floors</td>
+                        <td class="sub-header-bg">Total Floor Area (㎡)</td>
+                        <td class="sub-header-bg">Internal Floor Area (㎡)</td>
+                        <td class="sub-header-bg">Others</td>
+                    </tr>
+                    <tr>
+                        <td>{{TOTAL_FLOORS}}</td>
+                        <td>{{TOTAL_FLOOR_AREA}}</td>
+                        <td>{{INTERNAL_FLOOR_AREA}}</td>
+                        <td>{{HOUSE_OTHERS}}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <!-- 行7：土地状况（内嵌子表格） -->
+        <tr>
+            <td class="label-bg">Land Status</td>
+            <td style="padding: 8px;">
+                <table class="sub-table">
+                    <tr>
+                        <td class="sub-header-bg">Land Number</td>
+                        <td class="sub-header-bg">Land Use Right Acquisition Method</td>
+                        <td class="sub-header-bg">Land Use Term</td>
+                    </tr>
+                    <tr>
+                        <td>{{LAND_NUMBER}}</td>
+                        <td>{{ACQUISITION_METHOD}}</td>
+                        <td>{{LAND_USE_TERM}}</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <!-- 备注模块 -->
+    <div class="remarks-title">Remarks</div>
+    <table class="remarks-table">
+        <tr>
+            <td>
+                {{REMARKS_CONTENT}}
+            </td>
+        </tr>
+    </table>
+</div>
+
+</body>
+</html>

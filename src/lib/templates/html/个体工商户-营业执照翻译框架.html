@@ -1,0 +1,327 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Business License Translation Template</title>
+    <!-- 
+    ========================================================================
+    【核心执行指令 - System Prompt】
+    若识别到所需翻译文档为框架对应文档。请提取文档中的所有中文信息并翻译为专业的英文，然后将所有的 {{大写变量名}} 替换为正确的翻译内容。如果有留白字段，请直接删除变量名保留空白标签。直接输出完整的HTML代码。
+
+    【内置生成与翻译规则指南】（AI套用时请严格遵守）
+    1. 动态标签调整 (Label Adaptation)：
+       - 若原件为“个体工商户”，保留 "Operator:" 和 "Form of Organization:"。
+       - 若原件为“有限公司”等，请相应将标签修改为 "Legal Representative:" (法定代表人) 和 "Registered Capital:" (注册资本) 等匹配词汇。
+    2. 日期格式 (Date Format)：
+       - 统一使用 "Month DD, YYYY" 格式，例如：June 13, 2000。
+    3. 地址格式 (Address Format)：
+       - 必须从小单位到大单位排列，并在末尾加上 ", China"（如：No. XX, XX Road, XX District, XX City, XX Province, China）。
+    4. 统一社会信用代码 (Unified Code)：
+       - 保持原样输出，不要添加任何空格或分隔符。
+    5. 经营范围 (Business Scope)：
+       - 若原件区分了许可项目和一般项目，请分别填入 {{PERMITTED_ITEMS}} 和 {{GENERAL_ITEMS}}；
+       - 若原件未区分，请合并保留翻译，并可自行删除 <div><strong>...</strong></div> 标签，仅保留纯文本翻译。所有项之间使用分号（;）分隔。
+       - 括号内的法律声明（如“依法须经批准的项目...”）须完整翻译。
+    6. 常见名词参考：
+       - 个体工商户: Individual Industrial and Commercial Household
+       - 有限责任公司: Limited Liability Company
+       - 个人经营: Individual Operation / 个人独资: Sole Proprietorship
+    ========================================================================
+    -->
+    <style>
+        /* 设置A4横向尺寸 */
+        @page {
+            size: A4 landscape;
+            margin: 0;
+        }
+        
+        body {
+            font-family: 'Times New Roman', 'SimSun', serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .a4-landscape {
+            width: 29.7cm;
+            height: 21cm;
+            background: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            position: relative;
+            padding: 1.2cm 2.5cm 2cm;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 标题行 - 统一代码和营业执照标题在一行 */
+        .header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+        
+        /* 统一社会信用代码 - 左侧 */
+        .unified-code-section {
+            flex: 0 0 auto;
+            text-align: left;
+        }
+        
+        .unified-code-label {
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+        
+        .unified-code {
+            font-weight: bold;
+            font-size: 16px;
+            letter-spacing: 1px;
+        }
+        
+        /* 营业执照标题 - 右侧 */
+        .license-title {
+            flex: 0 0 auto;
+            text-align: center;
+            font-size: 28px;
+            font-weight: bold;
+            text-decoration: underline;
+            line-height: 1.2;
+        }
+        
+        /* 主内容区域 */
+        .main-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 信息区域 - 使用表格布局保持对齐 */
+        .info-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+        
+        .info-column {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .info-row {
+            margin-bottom: 12px;
+            display: flex;
+            min-height: 20px;
+            line-height: 1.3;
+        }
+        
+        .label {
+            font-weight: bold;
+            min-width: 150px;
+            white-space: nowrap;
+        }
+        
+        .content {
+            flex: 1;
+            border-bottom: 1px dotted #666;
+            padding-left: 5px;
+            line-height: 1.3;
+        }
+        
+        /* 经营范围特殊处理 */
+        .scope-row {
+            display: block;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+        
+        .scope-label {
+            font-weight: bold;
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+        
+        .scope-content {
+            border-bottom: none;
+            padding-left: 0;
+            font-size: 13px;
+            line-height: 1.3;
+        }
+        
+        /* 登记机关区域 */
+        .authority-section {
+            text-align: right;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid #000;
+            line-height: 1.3;
+        }
+        
+        .authority-name {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .authority-date {
+            font-size: 14px;
+        }
+        
+        /* 底部信息区域 */
+        .footer-section {
+            font-size: 13px;
+            margin-top: 15px; 
+            padding-top: 0.6cm; 
+        }
+        
+        /* 调整为一行显示 */
+        .footer-url {
+            text-align: center;
+            margin-bottom: 6px;
+            line-height: 1.3;
+            white-space: nowrap;
+        }
+        
+        .footer-reminder {
+            font-size: 12px;
+            text-align: center;
+            margin-bottom: 8px;
+            line-height: 1.3;
+        }
+        
+        .footer-monitor {
+            text-align: center;
+            font-size: 13px;
+            margin-top: 10px;
+            padding-top: 8px;
+            border-top: 1px solid #ccc;
+            line-height: 1.3;
+        }
+        
+        /* 底部内容区域 */
+        .bottom-content {
+            margin-top: 5px;
+        }
+        
+        /* 底部空白区域 - 增加高度 */
+        .bottom-space {
+            height: 5.5cm; 
+        }
+        
+        /* 打印优化 */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            
+            .a4-landscape {
+                box-shadow: none;
+                width: 29.7cm;
+                height: 21cm;
+                padding: 1.2cm 2.5cm 2cm;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="a4-landscape">
+        <div class="main-content">
+            <!-- 标题行 -->
+            <div class="header-row">
+                <div class="unified-code-section">
+                    <div class="unified-code-label">Unified Social Credit Code</div>
+                    <div class="unified-code">{{UNIFIED_SOCIAL_CREDIT_CODE}}</div>
+                </div>
+                
+                <div class="license-title">
+                    Business License<br>
+                    (Duplicate)
+                </div>
+                
+                <!-- 右侧留空，使标题居中 -->
+                <div style="flex: 0 0 auto; width: 180px;"></div>
+            </div>
+            
+            <!-- 信息区域，分为两列 -->
+            <div class="info-section">
+                <!-- 左列 -->
+                <div class="info-column">
+                    <div class="info-row">
+                        <div class="label">Name:</div>
+                        <div class="content">{{BUSINESS_NAME}}</div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <div class="label">Type:</div>
+                        <div class="content">{{BUSINESS_TYPE}}</div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <div class="label">Operator:</div>
+                        <div class="content">{{OPERATOR_NAME}}</div>
+                    </div>
+                </div>
+                
+                <!-- 右列 -->
+                <div class="info-column">
+                    <div class="info-row">
+                        <div class="label">Form of Organization:</div>
+                        <div class="content">{{ORGANIZATION_FORM}}</div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <div class="label">Registration Date:</div>
+                        <div class="content">{{REGISTRATION_DATE}}</div>
+                    </div>
+                    
+                    <div class="info-row">
+                        <div class="label">Business Address:</div>
+                        <div class="content">{{BUSINESS_ADDRESS}}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 经营范围 -->
+            <div class="scope-row">
+                <div class="scope-label">Business Scope:</div>
+                <div class="scope-content">
+                    <div><strong>Permitted Items:</strong> {{PERMITTED_ITEMS}}</div>
+                    <div><strong>General Items:</strong> {{GENERAL_ITEMS}}</div>
+                </div>
+            </div>
+            
+            <!-- 登记机关 -->
+            <div class="authority-section">
+                <div class="authority-name">Registration Authority</div>
+                <div class="authority-date">{{AUTHORITY_DATE}}</div>
+            </div>
+            
+            <!-- 底部信息 -->
+            <div class="footer-section">
+                <div class="bottom-content">
+                    <div class="footer-url">
+                        National Enterprise Credit Information Publicity System Website: http://www.gsxt.gov.cn
+                    </div>
+                    
+                    <div class="footer-reminder">
+                        Market entities shall submit and publicize their annual report through the National Enterprise Credit Information Publicity System between January 1 and June 30 each year.
+                    </div>
+                    
+                    <div class="footer-monitor">
+                        Produced under the supervision of the State Administration for Market Regulation.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 底部空白区域 (用于盖章/翻译章留白) -->
+            <div class="bottom-space"></div>
+        </div>
+    </div>
+</body>
+</html>

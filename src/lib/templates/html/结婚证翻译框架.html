@@ -1,0 +1,158 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marriage Certificate Translation Template</title>
+    <!-- 
+    ========================================================================
+    【核心执行指令 - System Prompt】
+    若识别到所需翻译文档为框架对应文档。请提取文档中的所有中文信息并翻译为专业的英文，然后将所有的 {{大写变量名}} 替换为正确的翻译内容。如果有留白字段，请直接删除变量名保留空白标签。直接输出完整的HTML代码。
+
+    【内置生成与翻译规则指南】（AI套用时请严格遵守）
+    1. 日期格式 (Date Format)：
+       - 统一使用 "Month DD, YYYY" 格式，例如：September 30, 2014。
+    2. 证件号码与备注 (ID & Remarks)：
+       - 身份证件号请保持原样（包含括号等特殊符号）。如果原件标明了“香港/澳门/台湾”，请直接翻译并在括号内注明（如：(Hong Kong)）。
+       - 备注 (Remarks) 如果原件写了“无”，请填入 "N/A" 或 "None"；如果原件为空白，请直接删除占位符保留空白。
+    3. 国籍 (Nationality)：
+       - “中国”统一翻译为 "China"。
+    4. 拼音拼写格式：
+       - 姓名翻译须首字母大写，例如：Luo Yuanjun, Wang Ting。
+    ========================================================================
+    -->
+    <style>
+        body {
+            font-family: 'Times New Roman', Times, serif;
+            margin: 0;
+            padding: 40px;
+            background-color: #fff;
+            color: #000;
+            display: flex;
+            justify-content: center;
+            line-height: 1.5;
+        }
+        /* 页面标准容器限制宽度，确保打印或另存为PDF时排版不散架 */
+        .page {
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .certificate-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            text-decoration: underline;
+            letter-spacing: 1px;
+        }
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 30px;
+            table-layout: fixed;
+        }
+        .info-table td {
+            padding: 10px 15px;
+            vertical-align: middle;
+            border: 1px solid #000;
+            word-wrap: break-word;
+        }
+        /* 左侧Label列固定宽度且加灰色底，增强公文专业感 */
+        .info-table td:first-child {
+            font-weight: bold;
+            width: 35%;
+            background-color: #f9f9f9;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-top: 20px;
+            margin-bottom: 10px;
+            text-decoration: underline;
+        }
+        .remarks {
+            font-style: italic;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="page">
+        <!-- 证书大标题 -->
+        <div class="certificate-title">MARRIAGE CERTIFICATE</div>
+
+        <!-- 基础登记信息表 -->
+        <table class="info-table">
+            <tr>
+                <td>Certificate Holder</td>
+                <td>{{CERTIFICATE_HOLDER}}</td>
+            </tr>
+            <tr>
+                <td>Registration Date</td>
+                <td>{{REGISTRATION_DATE}}</td>
+            </tr>
+            <tr>
+                <td>Marriage Certificate Number</td>
+                <td>{{CERTIFICATE_NUMBER}}</td>
+            </tr>
+            <tr>
+                <td>Remarks</td>
+                <td class="remarks">{{REMARKS}}</td>
+            </tr>
+        </table>
+
+        <!-- 男方信息表 -->
+        <div class="section-title">Groom's Information</div>
+        <table class="info-table">
+            <tr>
+                <td>Full Name</td>
+                <td>{{GROOM_NAME}}</td>
+            </tr>
+            <tr>
+                <td>Gender</td>
+                <td>{{GROOM_GENDER}}</td>
+            </tr>
+            <tr>
+                <td>Nationality</td>
+                <td>{{GROOM_NATIONALITY}}</td>
+            </tr>
+            <tr>
+                <td>Date of Birth</td>
+                <td>{{GROOM_DOB}}</td>
+            </tr>
+            <tr>
+                <td>ID Card Number</td>
+                <td>{{GROOM_ID_NUMBER}}</td>
+            </tr>
+        </table>
+
+        <!-- 女方信息表 -->
+        <div class="section-title">Bride's Information</div>
+        <table class="info-table">
+            <tr>
+                <td>Full Name</td>
+                <td>{{BRIDE_NAME}}</td>
+            </tr>
+            <tr>
+                <td>Gender</td>
+                <td>{{BRIDE_GENDER}}</td>
+            </tr>
+            <tr>
+                <td>Nationality</td>
+                <td>{{BRIDE_NATIONALITY}}</td>
+            </tr>
+            <tr>
+                <td>Date of Birth</td>
+                <td>{{BRIDE_DOB}}</td>
+            </tr>
+            <tr>
+                <td>ID Card Number</td>
+                <td>{{BRIDE_ID_NUMBER}}</td>
+            </tr>
+        </table>
+    </div>
+
+</body>
+</html>
