@@ -254,7 +254,6 @@ export default function RegisterPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) return;
@@ -289,7 +288,6 @@ export default function RegisterPage() {
     } finally {
       setIsLoading(false);
     }
-  };
   };
 
   return (
@@ -623,5 +621,3 @@ export default function RegisterPage() {
     </div>
   );
 }
-
-
