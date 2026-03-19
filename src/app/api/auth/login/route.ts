@@ -65,9 +65,18 @@ async function validateUserPassword(username: string, password: string) {
   return userInfo;
 }
 
-// 生成JWT token
-function generateToken(userId: number, username: string): string {
-  return jwt.sign({ userId, username }, JWT_SECRET, { expiresIn: JWT_EXPIRES_IN });
+// 生成JWT token（payload与auth.ts中的JWTPayload一致）
+function generateToken(userInfo: {
+  id: number;
+  username: string;
+  role: string;
+  companyId: number | null;
+}): string {
+  return jwt.sign(
+    { userId: userInfo.id, username: userInfo.username, role: userInfo.role, companyId: userInfo.companyId },
+    JWT_SECRET,
+    { expiresIn: JWT_EXPIRES_IN }
+  );
 }
 
 export async function POST(request: NextRequest) {
@@ -92,7 +101,12 @@ export async function POST(request: NextRequest) {
     }
 
     // 生成JWT token
-    const token = generateToken(user.id, user.username);
+    const token = generateToken({
+      id: user.id,
+      username: user.username,
+      role: user.role,
+      companyId: user.companyId
+    });
 
     // 返回用户信息（不包含密码）
     const response = NextResponse.json({

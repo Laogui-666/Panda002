@@ -9,6 +9,19 @@ import prisma from '@/lib/erp/prisma';
 import { getCurrentUser, canAccessCompany, hashPassword } from '@/lib/erp/auth';
 import { ROLE_LABELS, UserRole } from '@/lib/erp/types';
 
+// 角色级别映射（数字越大权限越高）
+const ROLE_LEVELS: Record<UserRole, number> = {
+  SUPER_ADMIN: 9,
+  COMPANY_OWNER: 8,
+  CS_ADMIN: 7,
+  CUSTOMER_SERVICE: 6,
+  VISA_ADMIN: 5,
+  DOC_COLLECTOR: 4,
+  OPERATOR: 3,
+  OUTSOURCE: 2,
+  CUSTOMER: 1,
+};
+
 // GET /api/erp/users
 export async function GET(request: NextRequest) {
   try {
@@ -117,17 +130,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, message: '缺少必填字段' }, { status: 400 });
     }
 
-    // 权限校验
-    if (user.role === UserRole.CS_ADMIN) {
-      // 客服部管理员只能创建CUSTOMER_SERVICE
-if (role !== UserRole.CUSTOMER_SERVICE) {
-        return NextResponse.json({ success: false, message: '无权限创建该角色用户' }, { status: 403 });
-      }
-    } else if (user.role === UserRole.VISA_ADMIN) {
-      // 签证部管理员只能创建DOC_COLLECTOR和OPERATOR
-      if (![UserRole.DOC_COLLECTOR, UserRole.OPERATOR].includes(role)) {
-        return NextResponse.json({ success: false, message: '无权限创建该角色用户' }, { status: 403 });
-      }
+    // 权限校验：允许创建同级及以下角色
+    const userRoleLevel = ROLE_LEVELS[user.role as UserRole] || 0;
+    const targetRoleLevel = ROLE_LEVELS[role as UserRole] || 0;
+    
+    // 只有目标角色级别小于等于当前用户角色级别时才允许
+    if (targetRoleLevel > userRoleLevel) {
+      return NextResponse.json({ success: false, message: '无权限创建该角色用户' }, { status: 403 });
     }
 
     // 公司权限校验

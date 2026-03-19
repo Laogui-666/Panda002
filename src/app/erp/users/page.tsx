@@ -40,6 +40,19 @@ const ROLE_COLORS: Record<string, string> = {
   CUSTOMER: 'bg-gray-100 text-gray-700',
 };
 
+// 角色级别映射（数字越大权限越高）
+const ROLE_LEVELS: Record<string, number> = {
+  SUPER_ADMIN: 9,
+  COMPANY_OWNER: 8,
+  CS_ADMIN: 7,
+  CUSTOMER_SERVICE: 6,
+  VISA_ADMIN: 5,
+  DOC_COLLECTOR: 4,
+  OPERATOR: 3,
+  OUTSOURCE: 2,
+  CUSTOMER: 1,
+};
+
 // 员工创建Modal
 const CreateUserModal = ({
   isOpen,
@@ -60,6 +73,26 @@ const CreateUserModal = ({
     role: '',
     departmentId: '',
   });
+
+  // 获取当前用户角色级别
+  const getCurrentUserRoleLevel = () => {
+    if (typeof window !== 'undefined') {
+      const userStr = localStorage.getItem('erp_user');
+      if (userStr) {
+        const user = JSON.parse(userStr);
+        return ROLE_LEVELS[user.role] || 0;
+      }
+    }
+    return 0;
+  };
+
+  // 获取可选择的角色列表（同级及以下）
+  const getAvailableRoles = () => {
+    const currentLevel = getCurrentUserRoleLevel();
+    return Object.entries(ROLE_LABELS).filter(([key]) => {
+      return ROLE_LEVELS[key] <= currentLevel;
+    });
+  };
 
   useEffect(() => {
     if (isOpen) {
@@ -175,7 +208,7 @@ const CreateUserModal = ({
                     className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-colors"
                   >
                     <option value="">请选择角色</option>
-                    {Object.entries(ROLE_LABELS).map(([key, label]) => (
+                    {getAvailableRoles().map(([key, label]) => (
                       <option key={key} value={key}>{label}</option>
                     ))}
                   </select>
