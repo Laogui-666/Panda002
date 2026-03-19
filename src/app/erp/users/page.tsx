@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
   Plus,
@@ -10,7 +11,9 @@ import {
   ChevronRight,
   Users,
   Shield,
+  X,
 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 // 角色标签（9级扁平化角色体系）
 const ROLE_LABELS: Record<string, string> = {
@@ -37,12 +40,192 @@ const ROLE_COLORS: Record<string, string> = {
   CUSTOMER: 'bg-gray-100 text-gray-700',
 };
 
+// 员工创建Modal
+const CreateUserModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  isLoading
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: any) => void;
+  isLoading: boolean;
+}) => {
+  const [formData, setFormData] = useState({
+    username: '',
+    password: '',
+    name: '',
+    phone: '',
+    role: '',
+    departmentId: '',
+  });
+
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({ username: '', password: '', name: '', phone: '', role: '', departmentId: '' });
+    }
+  }, [isOpen]);
+
+  const handleSubmit = () => {
+    if (!formData.username.trim()) {
+      toast.error('用户名不能为空');
+      return;
+    }
+    if (!formData.password.trim()) {
+      toast.error('密码不能为空');
+      return;
+    }
+    if (!formData.name.trim()) {
+      toast.error('姓名不能为空');
+      return;
+    }
+    if (!formData.role) {
+      toast.error('请选择角色');
+      return;
+    }
+    onSubmit(formData);
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-white rounded-2xl w-full max-w-lg shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+              <h3 className="text-lg font-semibold text-slate-800">添加员工</h3>
+              <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded-lg">
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    用户名 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.username}
+                    onChange={(e) => setFormData({ ...formData, username: e.target.value })}
+                    placeholder="请输入用户名"
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    密码 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="password"
+                    value={formData.password}
+                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                    placeholder="请输入密码"
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  姓名 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="请输入员工姓名"
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-colors"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    手机号
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    placeholder="请输入手机号"
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    角色 <span className="text-red-500">*</span>
+                  </label>
+                  <select
+                    value={formData.role}
+                    onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-colors"
+                  >
+                    <option value="">请选择角色</option>
+                    {Object.entries(ROLE_LABELS).map(([key, label]) => (
+                      <option key={key} value={key}>{label}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  部门ID
+                </label>
+                <input
+                  type="text"
+                  value={formData.departmentId}
+                  onChange={(e) => setFormData({ ...formData, departmentId: e.target.value })}
+                  placeholder="请输入部门ID（可选）"
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-colors"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 p-6 border-t border-slate-200">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                disabled={isLoading}
+              >
+                取消
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={isLoading}
+                className="px-4 py-2 text-sm font-medium text-white bg-cyan-500 hover:bg-cyan-600 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {isLoading ? '提交中...' : '创建'}
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 export default function ERPUsersPage() {
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, pageSize: 20, total: 0, totalPages: 0 });
   const [filters, setFilters] = useState({ name: '', role: '' });
   const [showAddModal, setShowAddModal] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
 
   const fetchUsers = useCallback(async (page = 1) => {
     setLoading(true);
@@ -66,6 +249,35 @@ export default function ERPUsersPage() {
       setLoading(false);
     }
   }, [filters.name, filters.role]);
+
+  // 创建员工提交
+  const handleCreateUser = async (data: any) => {
+    setModalLoading(true);
+    try {
+      const token = localStorage.getItem('erp_token');
+      const response = await fetch('/api/erp/users', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+      const result = await response.json();
+      if (result.success) {
+        toast.success('创建成功');
+        setShowAddModal(false);
+        fetchUsers(1);
+      } else {
+        toast.error(result.message || '创建失败');
+      }
+    } catch (error) {
+      console.error('创建员工失败:', error);
+      toast.error('创建失败');
+    } finally {
+      setModalLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchUsers(pagination.page);
@@ -165,12 +377,15 @@ export default function ERPUsersPage() {
                         <span className="font-medium text-slate-800">{user.name}</span>
                       </div>
                     </td>
+
                     <td className="px-6 py-4 text-sm text-slate-600">
                       {user.username}
                     </td>
+
                     <td className="px-6 py-4 text-sm text-slate-600">
                       {user.phone || '-'}
                     </td>
+
                     <td className="px-6 py-4">
                       <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${
                         ROLE_COLORS[user.role] || 'bg-gray-100'
@@ -178,15 +393,19 @@ export default function ERPUsersPage() {
                         {ROLE_LABELS[user.role] || user.role}
                       </span>
                     </td>
+
                     <td className="px-6 py-4 text-sm text-slate-600">
                       {user.department?.name || '-'}
                     </td>
+
                     <td className="px-6 py-4 text-sm text-slate-600">
                       {user.company?.name || '-'}
                     </td>
+
                     <td className="px-6 py-4 text-sm text-slate-500">
                       {user.lastLoginAt ? new Date(user.lastLoginAt).toLocaleDateString('zh-CN') : '-'}
                     </td>
+
                   </tr>
                 ))}
               </tbody>
@@ -205,6 +424,7 @@ export default function ERPUsersPage() {
             <p className="text-sm text-slate-500">
               共 {pagination.total} 条记录，第 {pagination.page}/{pagination.totalPages} 页
             </p>
+
             <div className="flex items-center gap-2">
               <button
                 onClick={() => handlePageChange(pagination.page - 1)}
@@ -224,6 +444,14 @@ export default function ERPUsersPage() {
           </div>
         )}
       </div>
+
+      {/* 创建员工Modal */}
+      <CreateUserModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSubmit={handleCreateUser}
+        isLoading={modalLoading}
+      />
     </div>
   );
 }

@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import Link from 'next/link';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
   Plus,
@@ -12,7 +13,160 @@ import {
   Phone,
   Mail,
   FileText,
+  X,
 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
+
+// 客户创建Modal
+const CreateCustomerModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  isLoading
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: any) => void;
+  isLoading: boolean;
+}) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    phone: '',
+    email: '',
+    passportNo: '',
+    birthDate: '',
+  });
+
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({ name: '', phone: '', email: '', passportNo: '', birthDate: '' });
+    }
+  }, [isOpen]);
+
+  const handleSubmit = () => {
+    if (!formData.name.trim()) {
+      toast.error('姓名不能为空');
+      return;
+    }
+    if (!formData.phone.trim()) {
+      toast.error('手机号不能为空');
+      return;
+    }
+    onSubmit(formData);
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-white rounded-2xl w-full max-w-lg shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+              <h3 className="text-lg font-semibold text-slate-800">添加客户</h3>
+              <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded-lg">
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  姓名 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  placeholder="请输入客户姓名"
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  手机号 <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="请输入手机号"
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  邮箱
+                </label>
+                <input
+                  type="email"
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  placeholder="请输入邮箱（可选）"
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  护照号
+                </label>
+                <input
+                  type="text"
+                  value={formData.passportNo}
+                  onChange={(e) => setFormData({ ...formData, passportNo: e.target.value })}
+                  placeholder="请输入护照号（可选）"
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  出生日期
+                </label>
+                <input
+                  type="date"
+                  value={formData.birthDate}
+                  onChange={(e) => setFormData({ ...formData, birthDate: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-colors"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 p-6 border-t border-slate-200">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                disabled={isLoading}
+              >
+                取消
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={isLoading}
+                className="px-4 py-2 text-sm font-medium text-white bg-cyan-500 hover:bg-cyan-600 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {isLoading ? '提交中...' : '创建'}
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
 
 export default function ERPCustomersPage() {
   const [customers, setCustomers] = useState<any[]>([]);
@@ -20,6 +174,7 @@ export default function ERPCustomersPage() {
   const [pagination, setPagination] = useState({ page: 1, pageSize: 20, total: 0, totalPages: 0 });
   const [filters, setFilters] = useState({ name: '', phone: '' });
   const [showAddModal, setShowAddModal] = useState(false);
+  const [modalLoading, setModalLoading] = useState(false);
 
   const fetchCustomers = useCallback(async (page = 1) => {
     setLoading(true);
@@ -43,6 +198,35 @@ export default function ERPCustomersPage() {
       setLoading(false);
     }
   }, [filters.name, filters.phone]);
+
+  // 创建客户提交
+  const handleCreateCustomer = async (data: any) => {
+    setModalLoading(true);
+    try {
+      const token = localStorage.getItem('erp_token');
+      const response = await fetch('/api/erp/customers', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+      const result = await response.json();
+      if (result.success) {
+        toast.success('创建成功');
+        setShowAddModal(false);
+        fetchCustomers(1);
+      } else {
+        toast.error(result.message || '创建失败');
+      }
+    } catch (error) {
+      console.error('创建客户失败:', error);
+      toast.error('创建失败');
+    } finally {
+      setModalLoading(false);
+    }
+  };
 
   useEffect(() => {
     fetchCustomers(pagination.page);
@@ -141,26 +325,33 @@ export default function ERPCustomersPage() {
                         <span className="font-medium text-slate-800">{customer.name}</span>
                       </div>
                     </td>
+
                     <td className="px-6 py-4 text-sm text-slate-600">
                       {customer.phone || '-'}
                     </td>
+
                     <td className="px-6 py-4 text-sm text-slate-600">
                       {customer.email || '-'}
                     </td>
+
                     <td className="px-6 py-4 text-sm text-slate-600">
                       {customer.passportNo || '-'}
                     </td>
+
                     <td className="px-6 py-4 text-sm text-slate-600">
                       {customer.company?.name}
                     </td>
+
                     <td className="px-6 py-4">
                       <span className="text-sm text-slate-600">
                         {customer.orders?.length || 0}
                       </span>
                     </td>
+
                     <td className="px-6 py-4 text-sm text-slate-500">
                       {new Date(customer.createdAt).toLocaleDateString('zh-CN')}
                     </td>
+
                   </tr>
                 ))}
               </tbody>
@@ -179,6 +370,7 @@ export default function ERPCustomersPage() {
             <p className="text-sm text-slate-500">
               共 {pagination.total} 条记录，第 {pagination.page}/{pagination.totalPages} 页
             </p>
+
             <div className="flex items-center gap-2">
               <button
                 onClick={() => handlePageChange(pagination.page - 1)}
@@ -198,6 +390,14 @@ export default function ERPCustomersPage() {
           </div>
         )}
       </div>
+
+      {/* 创建客户Modal */}
+      <CreateCustomerModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSubmit={handleCreateCustomer}
+        isLoading={modalLoading}
+      />
     </div>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from 'react';
 import Link from 'next/link';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search,
   Plus,
@@ -15,7 +15,9 @@ import {
   ChevronLeft,
   ChevronRight,
   Package,
+  X,
 } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 
 // 状态标签映射
 const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }> = {
@@ -31,12 +33,164 @@ const STATUS_LABELS: Record<string, { label: string; color: string; bg: string }
   REJECTED: { label: '拒签', color: 'text-red-600', bg: 'bg-red-100' },
 };
 
+// 订单创建Modal
+const CreateOrderModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  customers,
+  isLoading
+}: {
+  isOpen: boolean;
+  onClose: () => void;
+  onSubmit: (data: any) => void;
+  customers: any[];
+  isLoading: boolean;
+}) => {
+  const [formData, setFormData] = useState({
+    customerId: '',
+    visaCountry: '',
+    visaType: '',
+    remarks: '',
+  });
+
+  useEffect(() => {
+    if (isOpen) {
+      setFormData({ customerId: '', visaCountry: '', visaType: '', remarks: '' });
+    }
+  }, [isOpen]);
+
+  const handleSubmit = () => {
+    if (!formData.customerId) {
+      toast.error('请选择客户');
+      return;
+    }
+    if (!formData.visaCountry.trim()) {
+      toast.error('请输入签证国家');
+      return;
+    }
+    if (!formData.visaType.trim()) {
+      toast.error('请输入签证类型');
+      return;
+    }
+    onSubmit(formData);
+  };
+
+  return (
+    <AnimatePresence>
+      {isOpen && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
+          onClick={onClose}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            exit={{ scale: 0.9, opacity: 0 }}
+            className="bg-white rounded-2xl w-full max-w-lg shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between p-6 border-b border-slate-200">
+              <h3 className="text-lg font-semibold text-slate-800">创建订单</h3>
+              <button onClick={onClose} className="p-1 hover:bg-slate-100 rounded-lg">
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  客户 <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.customerId}
+                  onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-colors"
+                >
+                  <option value="">请选择客户</option>
+                  {customers.map((customer) => (
+                    <option key={customer.id} value={customer.id}>
+                      {customer.name} - {customer.phone || '无手机号'}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    签证国家 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.visaCountry}
+                    onChange={(e) => setFormData({ ...formData, visaCountry: e.target.value })}
+                    placeholder="如：日本、美国"
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-colors"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">
+                    签证类型 <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.visaType}
+                    onChange={(e) => setFormData({ ...formData, visaType: e.target.value })}
+                    placeholder="如：旅游签、商务签"
+                    className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-2">
+                  备注
+                </label>
+                <textarea
+                  value={formData.remarks}
+                  onChange={(e) => setFormData({ ...formData, remarks: e.target.value })}
+                  placeholder="请输入备注信息"
+                  rows={3}
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-colors resize-none"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 p-6 border-t border-slate-200">
+              <button
+                onClick={onClose}
+                className="px-4 py-2 text-sm font-medium text-slate-700 bg-slate-100 hover:bg-slate-200 rounded-lg transition-colors"
+                disabled={isLoading}
+              >
+                取消
+              </button>
+              <button
+                onClick={handleSubmit}
+                disabled={isLoading}
+                className="px-4 py-2 text-sm font-medium text-white bg-cyan-500 hover:bg-cyan-600 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {isLoading ? '提交中...' : '创建'}
+              </button>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+};
+
 export default function ERPOrdersPage() {
   const [orders, setOrders] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, pageSize: 20, total: 0, totalPages: 0 });
   const [filters, setFilters] = useState({ status: '', orderNo: '', customerName: '' });
   const [showAddModal, setShowAddModal] = useState(false);
+  const [customers, setCustomers] = useState<any[]>([]);
+  const [modalLoading, setModalLoading] = useState(false);
 
   const fetchOrders = useCallback(async (page = 1) => {
     setLoading(true);
@@ -62,6 +216,51 @@ export default function ERPOrdersPage() {
     }
   }, [filters.status, filters.orderNo, filters.customerName]);
 
+  // 获取客户列表
+  const fetchCustomers = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('erp_token');
+      const response = await fetch('/api/erp/customers?pageSize=100', {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const result = await response.json();
+      if (result.success) {
+        setCustomers(result.data.list);
+      }
+    } catch (error) {
+      console.error('获取客户列表失败:', error);
+    }
+  }, []);
+
+  // 创建订单提交
+  const handleCreateOrder = async (data: any) => {
+    setModalLoading(true);
+    try {
+      const token = localStorage.getItem('erp_token');
+      const response = await fetch('/api/erp/orders', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+      const result = await response.json();
+      if (result.success) {
+        toast.success('创建成功');
+        setShowAddModal(false);
+        fetchOrders(1);
+      } else {
+        toast.error(result.message || '创建失败');
+      }
+    } catch (error) {
+      console.error('创建订单失败:', error);
+      toast.error('创建失败');
+    } finally {
+      setModalLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchOrders(pagination.page);
   }, [fetchOrders, pagination.page]);
@@ -82,7 +281,7 @@ export default function ERPOrdersPage() {
           <h1 className="text-2xl font-bold text-slate-800">订单管理</h1>
           <p className="text-slate-500 mt-1">管理所有签证订单</p>
         </div>
-        <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors">
+        <button onClick={() => { setShowAddModal(true); fetchCustomers(); }} className="flex items-center gap-2 px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors">
           <Plus className="w-4 h-4" />
           创建订单
         </button>
@@ -218,6 +417,7 @@ export default function ERPOrdersPage() {
             <p className="text-sm text-slate-500">
               共 {pagination.total} 条记录，第 {pagination.page}/{pagination.totalPages} 页
             </p>
+
             <div className="flex items-center gap-2">
               <button
                 onClick={() => handlePageChange(pagination.page - 1)}
@@ -237,6 +437,15 @@ export default function ERPOrdersPage() {
           </div>
         )}
       </div>
+
+      {/* 创建订单Modal */}
+      <CreateOrderModal
+        isOpen={showAddModal}
+        onClose={() => setShowAddModal(false)}
+        onSubmit={handleCreateOrder}
+        customers={customers}
+        isLoading={modalLoading}
+      />
     </div>
   );
 }

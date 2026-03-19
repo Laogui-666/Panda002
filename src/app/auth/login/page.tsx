@@ -217,8 +217,8 @@ export default function LoginPage() {
           localStorage.setItem('erp_user', JSON.stringify(data.data.user));
           localStorage.setItem('erp_token', data.data.token);
         }
-        // 跳转到个人中心
-        router.push('/profile');
+        // 跳转到ERP系统
+        router.push('/erp/dashboard');
       } else {
         // 登录失败，显示错误信息
         setErrors({ ...errors, password: data.message || '用户名或密码错误' });

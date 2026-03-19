@@ -1,27 +1,20 @@
 /**
  * 公司管理页面 - 超级管理员专用
- * 
- * 功能：
- * - 查看所有公司列表
- * - 创建新公司
- * - 编辑公司信息
- * - 删除公司
  */
 
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Building2, Plus, Search, Edit2, Trash2, X, Check, ChevronLeft, ChevronRight, Users, FileText, UserCheck } from 'lucide-react';
 import { toast } from 'react-hot-toast';
 
-// 公司状态映射
 const STATUS_COLORS: Record<string, { bg: string; text: string; label: string }> = {
   active: { bg: 'bg-green-100', text: 'text-green-700', label: '正常' },
   inactive: { bg: 'bg-yellow-100', text: 'text-yellow-700', label: '停用' },
 };
 
-// 公司编辑弹窗
 const CompanyModal = ({
   isOpen,
   onClose,
@@ -106,9 +99,7 @@ const CompanyModal = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  公司简称
-                </label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">公司简称</label>
                 <input
                   type="text"
                   value={formData.shortName}
@@ -120,9 +111,7 @@ const CompanyModal = ({
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    联系电话
-                  </label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">联系电话</label>
                   <input
                     type="text"
                     value={formData.phone}
@@ -132,9 +121,7 @@ const CompanyModal = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-slate-700 mb-2">
-                    邮箱
-                  </label>
+                  <label className="block text-sm font-medium text-slate-700 mb-2">邮箱</label>
                   <input
                     type="email"
                     value={formData.email}
@@ -146,15 +133,13 @@ const CompanyModal = ({
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700 mb-2">
-                  地址
-                </label>
+                <label className="block text-sm font-medium text-slate-700 mb-2">地址</label>
                 <textarea
                   value={formData.address}
                   onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                   placeholder="请输入公司地址"
                   rows={2}
-                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500focus:border-cyan-500 outline-none transition-colors resize-none"
+                  className="w-full px-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none transition-colors resize-none"
                 />
               </div>
             </div>
@@ -191,7 +176,6 @@ export default function CompaniesPage() {
   const [editingCompany, setEditingCompany] = useState<any>(null);
   const [modalLoading, setModalLoading] = useState(false);
 
-  // 获取公司列表
   const fetchCompanies = useCallback(async (page = 1, keyword = '') => {
     setLoading(true);
     try {
@@ -201,8 +185,9 @@ export default function CompaniesPage() {
       });
       if (keyword) params.set('name', keyword);
 
+      const token = localStorage.getItem('erp_token');
       const response = await fetch(`/api/erp/companies?${params}`, {
-        credentials: 'include',
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const result = await response.json();
@@ -224,35 +209,34 @@ export default function CompaniesPage() {
     fetchCompanies(pagination.page, searchKeyword);
   }, [fetchCompanies, pagination.page, searchKeyword]);
 
-  // 搜索
   const handleSearch = () => {
     setPagination((prev) => ({ ...prev, page: 1 }));
     fetchCompanies(1, searchKeyword);
   };
 
-  // 打开新建弹窗
   const handleAdd = () => {
     setEditingCompany(null);
     setShowModal(true);
   };
 
-  // 打开编辑弹窗
   const handleEdit = (company: any) => {
     setEditingCompany(company);
     setShowModal(true);
   };
 
-  // 提交表单
   const handleSubmit = async (data: any) => {
     setModalLoading(true);
     try {
+      const token = localStorage.getItem('erp_token');
       const url = editingCompany ? `/api/erp/companies?id=${editingCompany.id}` : '/api/erp/companies';
       const method = editingCompany ? 'PUT' : 'POST';
 
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify(data),
       });
 
@@ -272,7 +256,6 @@ export default function CompaniesPage() {
     }
   };
 
-  // 分页
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || newPage > pagination.totalPages) return;
     setPagination((prev) => ({ ...prev, page: newPage }));
@@ -281,12 +264,12 @@ export default function CompaniesPage() {
 
   return (
     <div className="space-y-6">
-      {/* 页面标题 */}
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-800">公司管理</h1>
           <p className="text-sm text-slate-500 mt-1">管理所有入驻公司信息</p>
         </div>
+
         <button
           onClick={handleAdd}
           className="flex items-center gap-2 px-4 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors"
@@ -296,7 +279,6 @@ export default function CompaniesPage() {
         </button>
       </div>
 
-      {/* 搜索栏 */}
       <div className="bg-white rounded-xl p-4 shadow-sm border border-slate-200">
         <div className="flex gap-4">
           <div className="flex-1 relative">
@@ -310,6 +292,7 @@ export default function CompaniesPage() {
               className="w-full pl-10 pr-4 py-2.5 border border-slate-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500 outline-none"
             />
           </div>
+
           <button
             onClick={handleSearch}
             className="px-6 py-2.5 bg-cyan-500 hover:bg-cyan-600 text-white rounded-lg transition-colors"
@@ -319,7 +302,6 @@ export default function CompaniesPage() {
         </div>
       </div>
 
-      {/* 公司列表 */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -334,6 +316,7 @@ export default function CompaniesPage() {
                 <th className="px-6 py-4 text-center text-sm font-semibold text-slate-700">操作</th>
               </tr>
             </thead>
+
             <tbody className="divide-y divide-slate-200">
               {loading ? (
                 <tr>
@@ -363,35 +346,41 @@ export default function CompaniesPage() {
                           </div>
                         </div>
                       </td>
+
                       <td className="px-6 py-4">
                         <div className="text-sm text-slate-600">
                           <p>{company.phone || '-'}</p>
                           <p className="text-slate-500">{company.email || '-'}</p>
                         </div>
                       </td>
+
                       <td className="px-6 py-4 text-center">
                         <div className="flex items-center justify-center gap-1 text-slate-600">
                           <Users className="w-4 h-4" />
                           <span>{company._count?.users || 0}</span>
                         </div>
                       </td>
+
                       <td className="px-6 py-4 text-center">
                         <div className="flex items-center justify-center gap-1 text-slate-600">
                           <FileText className="w-4 h-4" />
                           <span>{company._count?.orders || 0}</span>
                         </div>
                       </td>
+
                       <td className="px-6 py-4 text-center">
                         <div className="flex items-center justify-center gap-1 text-slate-600">
                           <UserCheck className="w-4 h-4" />
                           <span>{company._count?.customers || 0}</span>
                         </div>
                       </td>
+
                       <td className="px-6 py-4 text-center">
                         <span className={`px-2.5 py-1 text-xs font-medium rounded-full ${status.bg} ${status.text}`}>
                           {status.label}
                         </span>
                       </td>
+
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-center gap-2">
                           <button
@@ -410,12 +399,12 @@ export default function CompaniesPage() {
           </table>
         </div>
 
-        {/* 分页 */}
         {!loading && companies.length > 0 && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-slate-200 bg-slate-50">
             <p className="text-sm text-slate-500">
               共 {pagination.total} 条记录，第 {pagination.page}/{pagination.totalPages} 页
             </p>
+
             <div className="flex items-center gap-2">
               <button
                 onClick={() => handlePageChange(pagination.page - 1)}
@@ -424,9 +413,11 @@ export default function CompaniesPage() {
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
+
               <span className="px-3 py-1 text-sm font-medium text-slate-700">
                 {pagination.page} / {pagination.totalPages}
               </span>
+
               <button
                 onClick={() => handlePageChange(pagination.page + 1)}
                 disabled={pagination.page >= pagination.totalPages}
@@ -439,7 +430,6 @@ export default function CompaniesPage() {
         )}
       </div>
 
-      {/* 新增/编辑弹窗 */}
       <CompanyModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
