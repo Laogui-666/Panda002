@@ -1,7 +1,28 @@
 /**
- * ERP 租户(公司)管理 DAO
- * 
- * 处理租户、公司等数据操作
+ * @deprecated
+ * 租户DAO已弃用，请使用 Prisma ORM
+ *
+ * 原生MySQL DAO 使用 mysql2/promise 直接操作数据库，
+ * 现已统一使用 Prisma ORM 作为唯一数据访问层。
+ *
+ * 迁移指南：
+ * - 使用 src/lib/erp/prisma.ts 中的 prisma 实例
+ * - 公司数据模型: prisma.company
+ * - 用户数据模型: prisma.user
+ *
+ * 此文件保留用于向后兼容，将在后续版本中移除。
+ *
+ * @example
+ * // 旧代码 (已弃用)
+ * import { getTenantList } from '@/lib/erp/dao/tenant';
+ * const { list, total } = await getTenantList({ page: 1, pageSize: 10 });
+ *
+ * // 新代码 (推荐)
+ * import prisma from '@/lib/erp/prisma';
+ * const [companies, total] = await Promise.all([
+ *   prisma.company.findMany({ skip: 0, take: 10 }),
+ *   prisma.company.count()
+ * ]);
  */
 
 import { query, queryOne, insert, update, remove } from '../connection';
@@ -27,10 +48,10 @@ export interface ERPTenant {
 
 type TenantRow = ERPTenant & RowDataPacket;
 
-// ============ 租户相关 ============
+// ============ 租户相关 - 已弃用 ============
 
 /**
- * 获取租户列表
+ * @deprecated 请使用 prisma.company.findMany()
  */
 export async function getTenantList(params: {
   page?: number;
@@ -40,10 +61,10 @@ export async function getTenantList(params: {
 }): Promise<{ list: ERPTenant[]; total: number }> {
   const { page = 1, pageSize = 10, keyword, status } = params;
   const offset = (page - 1) * pageSize;
-  
+
   let where = 'WHERE 1=1';
   const paramsList: any[] = [];
-  
+
   if (keyword) {
     where += ' AND (tenant_name LIKE ? OR tenant_key LIKE ? OR contact_email LIKE ?)';
     paramsList.push(`%${keyword}%`, `%${keyword}%`, `%${keyword}%`);
@@ -52,21 +73,21 @@ export async function getTenantList(params: {
     where += ' AND status = ?';
     paramsList.push(status);
   }
-  
+
   // 获取总数
   const countSql = `SELECT COUNT(*) as total FROM tenants ${where}`;
   const countResult = await queryOne<RowDataPacket>(countSql, paramsList);
   const total = countResult?.total || 0;
-  
+
   // 获取列表
   const listSql = `SELECT * FROM tenants ${where} ORDER BY created_at DESC LIMIT ? OFFSET ?`;
   const list = await query<TenantRow[]>(listSql, [...paramsList, pageSize, offset]);
-  
+
   return { list, total };
 }
 
 /**
- * 根据ID获取租户
+ * @deprecated 请使用 prisma.company.findUnique({ where: { id } })
  */
 export async function getTenantById(id: number): Promise<ERPTenant | null> {
   const sql = 'SELECT * FROM tenants WHERE id = ?';
@@ -74,7 +95,7 @@ export async function getTenantById(id: number): Promise<ERPTenant | null> {
 }
 
 /**
- * 根据tenant_key获取租户
+ * @deprecated 请使用 prisma.company.findFirst({ where: { tenant_key, status: 'active' } })
  */
 export async function getTenantByKey(tenantKey: string): Promise<ERPTenant | null> {
   const sql = 'SELECT * FROM tenants WHERE tenant_key = ? AND status = ?';
@@ -82,7 +103,7 @@ export async function getTenantByKey(tenantKey: string): Promise<ERPTenant | nul
 }
 
 /**
- * 创建租户
+ * @deprecated 请使用 prisma.company.create({ data: { name, shortName, ... } })
  */
 export async function createTenant(data: {
   tenant_name: string;
@@ -93,10 +114,10 @@ export async function createTenant(data: {
   subscription_plan?: string;
   max_users?: number;
 }): Promise<number> {
-  const sql = `INSERT INTO tenants 
-    (tenant_name, tenant_key, contact_person, contact_phone, contact_email, subscription_plan, max_users, status) 
+  const sql = `INSERT INTO tenants
+    (tenant_name, tenant_key, contact_person, contact_phone, contact_email, subscription_plan, max_users, status)
     VALUES (?, ?, ?, ?, ?, ?, ?, 'active')`;
-  
+
   return insert('tenants', {
     tenant_name: data.tenant_name,
     tenant_key: data.tenant_key,
@@ -110,7 +131,7 @@ export async function createTenant(data: {
 }
 
 /**
- * 更新租户
+ * @deprecated 请使用 prisma.company.update({ where: { id }, data: { ... } })
  */
 export async function updateTenant(id: number, data: Partial<{
   tenant_name: string;
@@ -123,7 +144,7 @@ export async function updateTenant(id: number, data: Partial<{
   config: string;
 }>): Promise<number> {
   if (Object.keys(data).length === 0) return 0;
-  
+
   return update('tenants', {
     ...data,
     updated_at: new Date().toISOString(),
@@ -131,7 +152,7 @@ export async function updateTenant(id: number, data: Partial<{
 }
 
 /**
- * 更新租户状态
+ * @deprecated 请使用 prisma.company.update({ where: { id }, data: { status } })
  */
 export async function updateTenantStatus(id: number, status: 'active' | 'inactive' | 'suspended'): Promise<number> {
   return update('tenants', {
@@ -141,7 +162,7 @@ export async function updateTenantStatus(id: number, status: 'active' | 'inactiv
 }
 
 /**
- * 删除租户（软删除）
+ * @deprecated 请使用 prisma.company.delete({ where: { id } }) 或软删除 prisma.company.update({ where: { id }, data: { status: 'inactive' } })
  */
 export async function deleteTenant(id: number): Promise<number> {
   return update('tenants', {
@@ -151,7 +172,7 @@ export async function deleteTenant(id: number): Promise<number> {
 }
 
 /**
- * 获取租户下的用户数量
+ * @deprecated 请使用 prisma.user.count({ where: { companyId } })
  */
 export async function getTenantUserCount(tenantId: number): Promise<number> {
   const sql = 'SELECT COUNT(*) as total FROM users WHERE tenant_id = ?';
@@ -160,7 +181,7 @@ export async function getTenantUserCount(tenantId: number): Promise<number> {
 }
 
 /**
- * 获取租户下的订单数量
+ * @deprecated 请使用 prisma.order.count({ where: { companyId } })
  */
 export async function getTenantOrderCount(tenantId: number): Promise<number> {
   const sql = 'SELECT COUNT(*) as total FROM orders WHERE tenant_id = ?';

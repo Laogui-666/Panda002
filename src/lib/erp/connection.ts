@@ -1,8 +1,25 @@
 /**
- * ERP 数据库连接管理
- * 
- * 使用 mysql2/promisified 连接池模式
- * 支持连接池管理、查询执行、事务操作
+ * @deprecated
+ * 数据库连接管理已弃用，请使用 Prisma ORM
+ *
+ * 原生 mysql2/promise 连接池模式已被 Prisma ORM 替代。
+ *
+ * 迁移指南：
+ * - 使用 src/lib/erp/prisma.ts 中的 prisma 实例
+ * - Prisma 自动管理连接池，无需手动管理
+ *
+ * 此文件保留用于向后兼容，将在后续版本中移除。
+ *
+ * @example
+ * // 旧代码 (已弃用)
+ * import { query, insert } from '@/lib/erp/connection';
+ * const rows = await query('SELECT * FROM users WHERE id = ?', [id]);
+ * const insertId = await insert('users', { name, email });
+ *
+ * // 新代码 (推荐)
+ * import prisma from '@/lib/erp/prisma';
+ * const user = await prisma.user.findUnique({ where: { id } });
+ * const newUser = await prisma.user.create({ data: { name, email } });
  */
 
 import mysql, { Pool, PoolConnection, RowDataPacket, ResultSetHeader } from 'mysql2/promise';
@@ -11,7 +28,7 @@ import { dbConfig } from './database';
 let pool: Pool | null = null;
 
 /**
- * 获取数据库连接池
+ * @deprecated 请使用 prisma.$connect() 或直接使用 prisma 实例
  */
 export async function getPool(): Promise<Pool> {
   if (!pool) {
@@ -32,10 +49,10 @@ export async function getPool(): Promise<Pool> {
 }
 
 /**
- * 执行查询并返回结果
+ * @deprecated 请使用 Prisma Query
  */
 export async function query<T extends RowDataPacket[]>(
-  sql: string, 
+  sql: string,
   params?: any[]
 ): Promise<T> {
   const pool = await getPool();
@@ -44,10 +61,10 @@ export async function query<T extends RowDataPacket[]>(
 }
 
 /**
- * 执行单条查询
+ * @deprecated 请使用 Prisma Query
  */
 export async function queryOne<T extends RowDataPacket>(
-  sql: string, 
+  sql: string,
   params?: any[]
 ): Promise<T | null> {
   const pool = await getPool();
@@ -56,46 +73,46 @@ export async function queryOne<T extends RowDataPacket>(
 }
 
 /**
- * 执行插入操作
+ * @deprecated 请使用 prisma.tableName.create({ data })
  */
 export async function insert(
-  table: string, 
+  table: string,
   data: Record<string, any>
 ): Promise<number> {
   const pool = await getPool();
   const fields = Object.keys(data);
   const values = Object.values(data);
   const placeholders = fields.map(() => '?').join(', ');
-  
+
   const sql = `INSERT INTO ${table} (${fields.join(', ')}) VALUES (${placeholders})`;
   const [result] = await pool.execute<ResultSetHeader>(sql, values);
   return result.insertId;
 }
 
 /**
- * 执行更新操作
+ * @deprecated 请使用 prisma.tableName.update({ where, data })
  */
 export async function update(
-  table: string, 
-  data: Record<string, any>, 
-  where: string, 
+  table: string,
+  data: Record<string, any>,
+  where: string,
   params?: any[]
 ): Promise<number> {
   const pool = await getPool();
   const sets = Object.keys(data).map(key => `${key} = ?`).join(', ');
   const values = [...Object.values(data), ...(params || [])];
-  
+
   const sql = `UPDATE ${table} SET ${sets} WHERE ${where}`;
   const [result] = await pool.execute<ResultSetHeader>(sql, values);
   return result.affectedRows;
 }
 
 /**
- * 执行删除操作
+ * @deprecated 请使用 prisma.tableName.delete({ where })
  */
 export async function remove(
-  table: string, 
-  where: string, 
+  table: string,
+  where: string,
   params?: any[]
 ): Promise<number> {
   const pool = await getPool();
@@ -105,7 +122,7 @@ export async function remove(
 }
 
 /**
- * 获取连接池状态
+ * @deprecated Prisma 自动管理连接状态
  */
 export async function getPoolStatus(): Promise<{
   connected: boolean;
@@ -127,7 +144,7 @@ export async function getPoolStatus(): Promise<{
 }
 
 /**
- * 关闭连接池
+ * @deprecated Prisma 自动管理连接生命周期
  */
 export async function closePool(): Promise<void> {
   if (pool) {
