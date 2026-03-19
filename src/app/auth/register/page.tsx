@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 注册页面
  * 盼达旅行 - 玻璃拟态风格
  */
@@ -254,17 +254,42 @@ export default function RegisterPage() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!validateForm()) return;
     
     setIsLoading(true);
-    
-    // 模拟API调用
-    setTimeout(() => {
+
+    try {
+      const response = await fetch('/api/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: registerMethod === 'username' ? formData.username : formData.phone,
+          password: formData.password,
+          nickname: registerMethod === 'username' ? formData.username : formData.phone,
+          phone: formData.phone || null,
+          email: formData.email || null,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        router.push('/auth/login');
+      } else {
+        setErrors({ ...errors, username: data.message || '注册失败' });
+        refreshCaptcha();
+      }
+    } catch (error) {
+      console.error('注册请求失败:', error);
+      setErrors({ ...errors, username: '网络错误' });
+      refreshCaptcha();
+    } finally {
       setIsLoading(false);
-      router.push('/auth/login');
-    },1500);
+    }
+  };
   };
 
   return (
@@ -598,3 +623,5 @@ export default function RegisterPage() {
     </div>
   );
 }
+
+

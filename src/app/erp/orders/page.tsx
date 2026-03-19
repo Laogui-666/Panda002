@@ -36,6 +36,7 @@ export default function ERPOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, pageSize: 20, total: 0, totalPages: 0 });
   const [filters, setFilters] = useState({ status: '', orderNo: '', customerName: '' });
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const fetchOrders = useCallback(async (page = 1) => {
     setLoading(true);
@@ -81,7 +82,7 @@ export default function ERPOrdersPage() {
           <h1 className="text-2xl font-bold text-slate-800">订单管理</h1>
           <p className="text-slate-500 mt-1">管理所有签证订单</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors">
+        <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors">
           <Plus className="w-4 h-4" />
           创建订单
         </button>

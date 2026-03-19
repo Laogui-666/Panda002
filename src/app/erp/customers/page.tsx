@@ -19,6 +19,7 @@ export default function ERPCustomersPage() {
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, pageSize: 20, total: 0, totalPages: 0 });
   const [filters, setFilters] = useState({ name: '', phone: '' });
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const fetchCustomers = useCallback(async (page = 1) => {
     setLoading(true);
@@ -63,7 +64,7 @@ export default function ERPCustomersPage() {
           <h1 className="text-2xl font-bold text-slate-800">客户管理</h1>
           <p className="text-slate-500 mt-1">管理客户信息</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors">
+        <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors">
           <Plus className="w-4 h-4" />
           添加客户
         </button>

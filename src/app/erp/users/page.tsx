@@ -42,6 +42,7 @@ export default function ERPUsersPage() {
   const [loading, setLoading] = useState(true);
   const [pagination, setPagination] = useState({ page: 1, pageSize: 20, total: 0, totalPages: 0 });
   const [filters, setFilters] = useState({ name: '', role: '' });
+  const [showAddModal, setShowAddModal] = useState(false);
 
   const fetchUsers = useCallback(async (page = 1) => {
     setLoading(true);
@@ -86,7 +87,7 @@ export default function ERPUsersPage() {
           <h1 className="text-2xl font-bold text-slate-800">员工管理</h1>
           <p className="text-slate-500 mt-1">管理公司员工账号</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors">
+        <button onClick={() => setShowAddModal(true)} className="flex items-center gap-2 px-4 py-2 bg-cyan-500 text-white rounded-lg hover:bg-cyan-600 transition-colors">
           <Plus className="w-4 h-4" />
           添加员工
         </button>
