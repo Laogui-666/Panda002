@@ -22,15 +22,9 @@ import { toast } from 'react-hot-toast';
 
 // 用户角色映射
 const ROLE_LABELS: Record<string, string> = {
-  SUPER_ADMIN: '超级管理员',
-  COMPANY_OWNER: '公司负责人',
-  CS_ADMIN: '客服部管理员',
-  CUSTOMER_SERVICE: '客服',
-  VISA_ADMIN: '签证部管理员',
-  DOC_COLLECTOR: '资料员',
-  OPERATOR: '签证操作员',
-  OUTSOURCE: '外包业务员',
-  CUSTOMER: '普通用户',
+  user: '普通用户',
+  vip: 'VIP用户',
+  admin: '管理员',
 };
 
 // 用户头像
@@ -319,7 +313,7 @@ export default function ProfilePage() {
 
   // 从localStorage读取用户信息
   useEffect(() => {
-    const storedUser = localStorage.getItem('erp_user');
+    const storedUser = localStorage.getItem('user');
     if (storedUser) {
       try {
         const parsedUser = JSON.parse(storedUser);
@@ -338,7 +332,7 @@ export default function ProfilePage() {
 
   // 验证登录状态
   useEffect(() => {
-    const token = localStorage.getItem('erp_token');
+    const token = localStorage.getItem('token');
     if (!token) {
       router.push('/auth/login');
     }
@@ -361,7 +355,7 @@ export default function ProfilePage() {
             phone: result.data.user.phone || '',
           });
           // 更新localStorage
-          localStorage.setItem('erp_user', JSON.stringify(result.data.user));
+          localStorage.setItem('user', JSON.stringify(result.data.user));
         }
       }
     } catch (error) {
@@ -377,8 +371,8 @@ export default function ProfilePage() {
   }, [isLoading, fetchUserProfile]);
 
   const handleLogout = () => {
-    localStorage.removeItem('erp_user');
-    localStorage.removeItem('erp_token');
+    localStorage.removeItem('user');
+    localStorage.removeItem('token');
     router.push('/auth/login');
   };
 
@@ -404,7 +398,7 @@ export default function ProfilePage() {
         // 更新本地数据
         if (result.data?.user) {
           setUser((prev: any) => ({ ...prev, ...result.data.user }));
-          localStorage.setItem('erp_user', JSON.stringify({ ...user, ...result.data.user }));
+          localStorage.setItem('user', JSON.stringify({ ...user, ...result.data.user }));
         }
       } else {
         toast.error(result.message || '更新失败');
@@ -502,9 +496,6 @@ export default function ProfilePage() {
           </Link>
           
           <div className="flex items-center gap-4">
-            <Button variant="ghost" size="sm" onClick={() => router.push('/erp')}>
-              ERP系统
-            </Button>
             <div className="flex items-center gap-2 cursor-pointer hover:opacity-80 transition-opacity">
               <IconAvatar name={user?.name} size="sm" />
               <span className="text-sm text-morandi-deep">{user?.name || user?.username}</span>

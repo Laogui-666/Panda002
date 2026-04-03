@@ -5,11 +5,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/erp/prisma';
-import jwt from 'jsonwebtoken';
-import { verifyPassword } from '@/lib/erp/auth';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'muhai-visa-erp-secret-key-2024';
+import prisma from '@/lib/prisma';
+import { verifyPassword, verifyToken, hashPassword } from '@/lib/auth';
 
 /**
  * GET - 获取当前用户资料
@@ -27,9 +24,16 @@ export async function GET(request: NextRequest) {
     }
 
     // 解析token
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: number; username: string };
+    const decoded = verifyToken(token);
 
-    // 获取用户信息（包含公司名称）
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, message: '登录已过期，请重新登录' },
+        { status: 401 }
+      );
+    }
+
+    // 获取用户信息
     const user = await prisma.user.findUnique({
       where: { id: decoded.userId },
       select: {
@@ -41,23 +45,8 @@ export async function GET(request: NextRequest) {
         avatar: true,
         role: true,
         status: true,
-        companyId: true,
-        departmentId: true,
         lastLoginAt: true,
         createdAt: true,
-        company: {
-          select: {
-            id: true,
-            name: true,
-            shortName: true,
-          }
-        },
-        department: {
-          select: {
-            id: true,
-            name: true,
-          }
-        }
       },
     });
 
@@ -95,7 +84,14 @@ export async function PUT(request: NextRequest) {
       );
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: number; username: string };
+    const decoded = verifyToken(token);
+
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, message: '登录已过期，请重新登录' },
+        { status: 401 }
+      );
+    }
     const body = await request.json();
 
     const { name, email, phone, avatar, currentPassword, newPassword } = body;
@@ -158,8 +154,7 @@ export async function PUT(request: NextRequest) {
 
     // 如果要修改密码，使用bcrypt加密
     if (newPassword) {
-      const bcrypt = require('bcryptjs');
-      updateData.passwordHash = await bcrypt.hash(newPassword, 10);
+      updateData.passwordHash = await hashPassword(newPassword);
     }
 
     const updatedUser = await prisma.user.update({
@@ -205,7 +200,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: number; username: string };
+    const decoded = verifyToken(token);
+
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, message: '登录已过期，请重新登录' },
+        { status: 401 }
+      );
+    }
     const { password } = await request.json();
 
     if (!password) {

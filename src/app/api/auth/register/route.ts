@@ -6,9 +6,8 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/erp/prisma';
-import { hashPassword } from '@/lib/erp/auth';
-import { UserRole, UserStatus } from '@prisma/client';
+import prisma from '@/lib/prisma';
+import { hashPassword } from '@/lib/auth';
 
 export async function POST(request: NextRequest) {
   try {
@@ -75,8 +74,8 @@ export async function POST(request: NextRequest) {
         name: nickname || username,
         phone: phone || null,
         email: email || null,
-        role: UserRole.CUSTOMER, // 默认普通用户角色
-        status: UserStatus.ACTIVE,
+        role: 'USER', // 默认普通用户角色
+        status: 'ACTIVE',
       },
     });
 

@@ -212,13 +212,13 @@ export default function LoginPage() {
       const data = await response.json();
 
       if (response.ok) {
-        // 登录成功，保存用户信息到localStorage（供ERP等模块使用）
+        // 登录成功，保存用户信息到localStorage
         if (data.data && data.data.user) {
-          localStorage.setItem('erp_user', JSON.stringify(data.data.user));
-          localStorage.setItem('erp_token', data.data.token);
+          localStorage.setItem('user', JSON.stringify(data.data.user));
+          localStorage.setItem('token', data.data.token);
         }
-        // 跳转到ERP系统
-        router.push('/erp/dashboard');
+        // 跳转到首页
+        router.push('/');
       } else {
         // 登录失败，显示错误信息
         setErrors({ ...errors, password: data.message || '用户名或密码错误' });

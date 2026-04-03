@@ -6,13 +6,10 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import prisma from '@/lib/erp/prisma';
-import { verifyPassword } from '@/lib/erp/auth';
-import { UserStatus } from '@prisma/client';
-import jwt from 'jsonwebtoken';
+import prisma from '@/lib/prisma';
+import { verifyPassword, generateToken, verifyToken, JWTPayload } from '@/lib/auth';
 
 // JWT配置
-const JWT_SECRET = process.env.JWT_SECRET || 'muhai-visa-erp-secret-key-2024';
 const JWT_EXPIRES_IN = '7d';
 
 // 验证密码（调用auth模块）
@@ -26,8 +23,6 @@ async function validateUserPassword(username: string, password: string) {
       name: true,
       phone: true,
       role: true,
-      companyId: true,
-      departmentId: true,
       passwordHash: true,
       status: true,
     },
@@ -37,7 +32,7 @@ async function validateUserPassword(username: string, password: string) {
     return null;
   }
 
-  if (user.status !== UserStatus.ACTIVE) {
+  if (user.status !== 'ACTIVE') {
     return null;
   }
 
@@ -52,30 +47,19 @@ async function validateUserPassword(username: string, password: string) {
     data: { lastLoginAt: new Date() },
   });
 
-  // 记录登录日志
-  await prisma.loginLog.create({
-    data: {
-      userId: user.id,
-      ipAddress: '0.0.0.0',
-      loginStatus: 'success',
-    },
-  });
-
   const { passwordHash, ...userInfo } = user;
   return userInfo;
 }
 
-// 生成JWT token（payload与auth.ts中的JWTPayload一致）
-function generateToken(userInfo: {
+// 生成JWT token
+function createToken(userInfo: {
   id: number;
   username: string;
   role: string;
-  companyId: number | null;
 }): string {
-  return jwt.sign(
-    { userId: userInfo.id, username: userInfo.username, role: userInfo.role, companyId: userInfo.companyId },
-    JWT_SECRET,
-    { expiresIn: JWT_EXPIRES_IN }
+  return generateToken(
+    { userId: userInfo.id, username: userInfo.username, role: userInfo.role },
+    JWT_EXPIRES_IN
   );
 }
 
@@ -101,11 +85,10 @@ export async function POST(request: NextRequest) {
     }
 
     // 生成JWT token
-    const token = generateToken({
+    const token = createToken({
       id: user.id,
       username: user.username,
-      role: user.role,
-      companyId: user.companyId
+      role: user.role
     });
 
     // 返回用户信息（不包含密码）
@@ -156,7 +139,14 @@ export async function GET(request: NextRequest) {
     }
 
     // 解析token获取用户ID
-    const decoded = jwt.verify(token, JWT_SECRET) as { userId: number; username: string };
+    const decoded = verifyToken(token);
+    
+    if (!decoded) {
+      return NextResponse.json(
+        { success: false, message: '登录已过期，请重新登录' },
+        { status: 401 }
+      );
+    }
     
     // 从数据库获取用户信息
     const user = await prisma.user.findUnique({
@@ -168,8 +158,6 @@ export async function GET(request: NextRequest) {
         name: true,
         phone: true,
         role: true,
-        companyId: true,
-        departmentId: true,
       },
     });
     
@@ -187,8 +175,8 @@ export async function GET(request: NextRequest) {
   } catch (error) {
     console.error('获取用户信息错误:', error);
     return NextResponse.json(
-      { success: false, message: '登录已过期，请重新登录' },
-      { status: 401 }
+      { success: false, message: '服务器错误' },
+      { status: 500 }
     );
   }
 }
